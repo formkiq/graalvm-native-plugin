@@ -1,0 +1,41 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		jcenter()
+	}
+
+	dependencies {
+		classpath 'com.formkiq.gradle:graalvm-native-plugin:1.0'
+    }
+ }
+
+apply plugin: 'java-library'
+apply plugin: 'com.formkiq.gradle.graalvm-native-plugin'
+
+repositories {
+		mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor 'com.formkiq:lambda-runtime-graalvm-annotations-processors:2.1'
+
+    implementation 'com.formkiq:lambda-runtime-graalvm:2.1'
+    implementation 'com.formkiq:lambda-runtime-graalvm-annotations:2.1'
+
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
+    implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'
+    testImplementation 'junit:junit:4.12'
+}
+
+nativeImage { 
+	version = "20.2.0"
+	mainClassName = "com.formkiq.lambda.runtime.graalvm.LambdaRuntime"
+    enableHttp = true
+    enableHttps = true
+    enableDocker = true
+    imageFile = "/tmp/graalvm-ce-java11-darwin-amd64-20.2.0.tar.gz"
+	reflectionConfig = "$buildDir/classes/java/main/META-INF/graal/reflect.json"
+}
+
+build.dependsOn graalvmNativeImage
