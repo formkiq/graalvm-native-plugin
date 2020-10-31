@@ -19,18 +19,17 @@ plugins {
 Using [legacy plugin application](https://docs.gradle.org/current/userguide/plugins.html#sec:old_plugin_application):
 ```groovy
 buildscript {
-    repositories {
-        maven {
-            url 'https://plugins.gradle.org/m2/'
-        }
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
     }
-
-    dependencies {
-        classpath 'gradle.plugin.com.formkiq.gradle:graalvm-native-plugin:1.0'
-    }
+  }
+  dependencies {
+    classpath "com.formkiq.gradle:graalvm-native-plugin:1.0"
+  }
 }
 
-apply plugin: 'com.github.ayltai.spring-graalvm-native-plugin'
+apply plugin: "com.formkiq.gradle.graalvm-native-plugin"
 ```
 
 #### Kotlin
@@ -44,16 +43,17 @@ plugins {
 Using [legacy plugin application](https://docs.gradle.org/current/userguide/plugins.html#sec:old_plugin_application):
 ```groovy
 buildscript {
-    repositories {
-        maven {
-            url = uri('https://plugins.gradle.org/m2/')
-        }
+  repositories {
+    maven {
+      url = uri("https://plugins.gradle.org/m2/")
     }
-
-    dependencies {
-        classpath('gradle.plugin.com.formkiq.gradle:graalvm-native-plugin:1.0')
-    }
+  }
+  dependencies {
+    classpath("com.formkiq.gradle:graalvm-native-plugin:1.0")
+  }
 }
+
+apply(plugin = "com.formkiq.gradle.graalvm-native-plugin")
 ```
 
 ### Specify build arguments
