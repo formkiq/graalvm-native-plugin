@@ -16,6 +16,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,9 +144,38 @@ public class DockerUtils {
               extension.getReflectionConfig() + ":" + extension.getReflectionConfig()));
         }
 
+        try {
+          createDirectories(classPaths);
+
+          if (extension.getReflectionConfig() != null) {
+            createDirectories(Arrays.asList(new File(extension.getReflectionConfig())));
+          }
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+
         args.addAll(Arrays.asList(getImageName(imageVersion, javaVersion), "sleep", "infinity"));
 
         arg0.args(args);
+      }
+
+      /**
+       * If Docker starts with directories that do not exist under linux the directories will be
+       * created as root and the plugin will have permission issues. So we create the directories as
+       * the running user before.
+       * 
+       * @param files {@link List} {@link File}
+       * @throws IOException IOException
+       */
+      private void createDirectories(final List<File> files) throws IOException {
+
+        for (File f : files) {
+          if (f.isFile()) {
+            Files.createDirectories(Path.of(f.getParentFile().getAbsolutePath()));
+          } else {
+            Files.createDirectories(Path.of(f.getAbsolutePath()));
+          }
+        }
       }
     });
 
