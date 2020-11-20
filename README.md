@@ -12,7 +12,7 @@ Supports for building Java applications as GraalVM native images.
 Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block):
 ```groovy
 plugins {
-    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.0'
+    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.0.1'
 }
 ```
 
@@ -25,7 +25,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.formkiq.gradle:graalvm-native-plugin:1.0"
+    classpath "com.formkiq.gradle:graalvm-native-plugin:1.0.1"
   }
 }
 
@@ -36,7 +36,7 @@ apply plugin: "com.formkiq.gradle.graalvm-native-plugin"
 Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block):
 ```groovy
 plugins {
-    id('com.formkiq.gradle.graalvm-native-plugin') version '1.0'
+    id('com.formkiq.gradle.graalvm-native-plugin') version '1.0.1'
 }
 ```
 
@@ -49,7 +49,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath("com.formkiq.gradle:graalvm-native-plugin:1.0")
+    classpath("com.formkiq.gradle:graalvm-native-plugin:1.0.1")
   }
 }
 
@@ -64,7 +64,6 @@ nativeImage {
 
     enableHttp          = true
     enableHttps         = true
-    reflectionConfig    = "$buildDir/classes/java/main/META-INF/graal/reflect.json"
 }
 ```
 
