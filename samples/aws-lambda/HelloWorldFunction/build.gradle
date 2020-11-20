@@ -5,7 +5,7 @@ buildscript {
 	}
 
 	dependencies {
-		classpath 'com.formkiq.gradle:graalvm-native-plugin:1.0'
+		classpath 'com.formkiq.gradle:graalvm-native-plugin:1.0.1'
     }
  }
 
@@ -29,13 +29,12 @@ dependencies {
 }
 
 nativeImage { 
-	version = "20.2.0"
-	mainClassName = "com.formkiq.lambda.runtime.graalvm.LambdaRuntime"
+    version = "20.2.0"
+    mainClassName = "com.formkiq.lambda.runtime.graalvm.LambdaRuntime"
     enableHttp = true
     enableHttps = true
     enableDocker = true
-    imageFile = "/tmp/graalvm-ce-java11-darwin-amd64-20.2.0.tar.gz"
-	reflectionConfig = "$buildDir/classes/java/main/META-INF/graal/reflect.json"
+    reflectionConfig = "$buildDir/classes/java/main/META-INF/graal/reflect.json"
 }
 
 build.dependsOn graalvmNativeImage
