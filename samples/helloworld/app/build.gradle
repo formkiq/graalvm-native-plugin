@@ -9,7 +9,7 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.0.2'
+    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.0.3'
 }
 
 sourceCompatibility = "11"
@@ -31,6 +31,8 @@ dependencies {
 application {
     // Define the main class for the application.
     mainClass = 'helloworld.App'
+    enableCheckToolchain = true
+    enableReportExceptionStackTraces = true
 }
 
 // creates binary file 'app/build/graalvm/app'
