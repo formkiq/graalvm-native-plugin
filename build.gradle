@@ -10,7 +10,10 @@ plugins {
 }
 
 group   'com.formkiq.gradle'
-version '1.0.1'
+version '1.0.2'
+
+sourceCompatibility = "11"
+targetCompatibility = "11"
 
 repositories {
     jcenter()

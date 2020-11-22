@@ -225,7 +225,9 @@ public class NativeImageExecutor {
   }
 
   private Path getGraalBin(final File graalvmBaseDir) {
-    return Path.of(graalvmBaseDir.getAbsolutePath(), "Contents/Home/bin");
+    return OperatingSystem.current().isMacOsX()
+        ? Path.of(graalvmBaseDir.getAbsolutePath(), "Contents/Home/bin")
+        : Path.of(graalvmBaseDir.getAbsolutePath(), "bin");
   }
 
   /**
