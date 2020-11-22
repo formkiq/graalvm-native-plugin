@@ -52,7 +52,6 @@ public class GraalvmNativePluginFunctionalTest {
         "plugins {" + "  id('com.formkiq.gradle.graalvm-native-plugin')\n" + "id('java-library')\n"
             + " }\n" + "nativeImage {\n" + " addClasspath = '"
             + classpath.toFile().getCanonicalPath() + "'\n"
-            + " imageFile = '/tmp/graalvm-ce-java11-darwin-amd64-20.2.0.tar.gz'\n"
             + " mainClassName = 'com.formkiq.gradle.Test'\n"
             + "enableReportExceptionStackTraces = true }");
 
