@@ -1,5 +1,9 @@
 # Graalvm Native Plugin Releases #
 
+### Version 1.0.3 (Nov 22, 2020)
+- [Pull 7](https://github.com/formkiq/graalvm-native-plugin/pull/7)
+ * Add Windows AMD 64 support
+ 
 ### Version 1.0.2 (Nov 21, 2020)
 - [Pull 5](https://github.com/formkiq/graalvm-native-plugin/pull/5)
  * Fixes Incorrect Path when running under Linux
