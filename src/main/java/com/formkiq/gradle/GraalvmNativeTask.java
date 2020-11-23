@@ -77,7 +77,7 @@ public class GraalvmNativeTask extends DefaultTask {
       NativeImageExecutor executor = new NativeImageExecutor(this.extension);
 
       boolean decompressed = this.extension.isEnableDocker().booleanValue()
-          || new ArchiveUtils().decompressTarGZip(toFile.toFile(), buildDir);
+          || new ArchiveUtils().decompress(toFile.toFile(), buildDir);
 
       if (this.extension.isEnableDocker().booleanValue()) {
         DockerUtils docker = new DockerUtils();
@@ -141,7 +141,7 @@ public class GraalvmNativeTask extends DefaultTask {
 
   private String getDownloadUrl() {
     return "https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-"
-        + this.extension.getImageVersion() + "/" + getFilename() + "." + getExtension();
+        + this.extension.getImageVersion() + "/" + getFilename();
   }
 
   private String getExtension() {
@@ -150,8 +150,8 @@ public class GraalvmNativeTask extends DefaultTask {
   }
 
   private String getFilename() {
-    return MessageFormat.format("graalvm-ce-{0}-{1}-{2}-{3}", getJavaVersion(), getPlatform(),
-        getArchitecture(), this.extension.getImageVersion());
+    return MessageFormat.format("graalvm-ce-{0}-{1}-{2}-{3}.{4}", getJavaVersion(), getPlatform(),
+        getArchitecture(), this.extension.getImageVersion(), getExtension());
   }
 
   private String getFilenameShort() {

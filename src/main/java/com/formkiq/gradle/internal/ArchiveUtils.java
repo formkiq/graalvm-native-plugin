@@ -30,6 +30,7 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.gradle.api.resources.ResourceException;
 
@@ -47,6 +48,41 @@ public class ArchiveUtils {
    * constructor.
    */
   public ArchiveUtils() {}
+
+  /**
+   * Decompress .tar.gz or .zip files.
+   * 
+   * @param archive {@link File}
+   * @param outputDir {@link File}
+   * @return boolean
+   * @throws IOException IOException
+   */
+  public boolean decompress(@Nonnull final File archive, @Nonnull final File outputDir)
+      throws IOException {
+    return archive.toString().endsWith(".zip") ? decompressZip(archive, outputDir)
+        : decompressTarGZip(archive, outputDir);
+  }
+
+  /**
+   * Decompress .zip files.
+   * 
+   * @param archive {@link File}
+   * @param outputDir {@link File}
+   * @return boolean
+   * @throws IOException IOException
+   */
+  public boolean decompressZip(@Nonnull final File archive, @Nonnull final File outputDir)
+      throws IOException {
+    try {
+      try (ArchiveInputStream in =
+          new ZipArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
+        return decompress(in, archive, outputDir);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }
 
   /**
    * Decompress .tar.gz files.

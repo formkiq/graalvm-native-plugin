@@ -187,8 +187,11 @@ public class NativeImageExecutor {
       project.exec(new Action<ExecSpec>() {
         @Override
         public void execute(ExecSpec arg0) {
+
+          String executeable =
+              OperatingSystem.current().isWindows() ? "native-image.cmd" : "native-image";
           arg0.setCommandLine(
-              Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/native-image")
+              Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + executeable)
                   .toFile());
           arg0.args(args);
           arg0.setWorkingDir(outputDir);
@@ -250,8 +253,10 @@ public class NativeImageExecutor {
       project.exec(new Action<ExecSpec>() {
         @Override
         public void execute(ExecSpec arg0) {
-          arg0.setCommandLine(
-              Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/gu").toFile());
+
+          String gu = OperatingSystem.current().isWindows() ? "gu.cmd" : "gu";
+          arg0.setCommandLine(Paths
+              .get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + gu).toFile());
           arg0.args(Arrays.asList("install", "native-image"));
         }
       });
