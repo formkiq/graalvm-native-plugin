@@ -7,25 +7,32 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.formkiq.graalvm.annotations.Reflectable;
 import com.formkiq.graalvm.annotations.ReflectableClass;
+import com.formkiq.graalvm.annotations.ReflectableClasses;
 import com.formkiq.graalvm.annotations.ReflectableField;
 
 /**
  * Handler for requests to Lambda function.
  */
 @Reflectable
-@ReflectableClass(className = APIGatewayProxyResponseEvent.class, allPublicConstructors = true,
-    fields = {@ReflectableField(name = "statusCode"), @ReflectableField(name = "headers"),
-        @ReflectableField(name = "body")})
+@ReflectableClasses({
+		@ReflectableClass(className = APIGatewayProxyRequestEvent.class, allPublicConstructors = true, fields = {
+				@ReflectableField(name = "headers"), @ReflectableField(name = "body") }),
+		@ReflectableClass(className = APIGatewayProxyResponseEvent.class, allPublicConstructors = true, fields = {
+				@ReflectableField(name = "statusCode"), @ReflectableField(name = "headers"),
+				@ReflectableField(name = "body") })
+})
 public class App
     implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
   @Override
+  @Reflectable
   public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input,
       final Context context) {
     Map<String, String> headers = new HashMap<>();

@@ -20,17 +20,19 @@ repositories {
 dependencies {
     annotationProcessor 'com.formkiq:graalvm-annotations-processor:1.0.0'
 
-    implementation 'com.formkiq:lambda-runtime-graalvm:2.1'
+    implementation 'com.formkiq:lambda-runtime-graalvm:2.2.0'
     implementation 'com.formkiq:graalvm-annotations:1.0.0'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
     implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'
+    implementation 'com.amazonaws:aws-xray-recorder-sdk-core:2.8.0' 
     testImplementation 'junit:junit:4.12'
 }
 
 nativeImage { 
     version = "20.2.0"
     mainClassName = "com.formkiq.lambda.runtime.graalvm.LambdaRuntime"
+    outputFileName = "server"
     enableHttp = true
     enableHttps = true
     enableDocker = true
