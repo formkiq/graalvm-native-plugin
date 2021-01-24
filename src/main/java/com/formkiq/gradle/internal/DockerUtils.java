@@ -66,7 +66,7 @@ public class DockerUtils {
   }
 
   private String getImageName(final String imageVersion, final String javaVersion) {
-    return MessageFormat.format("oracle/graalvm-ce:{0}-{1}", imageVersion, javaVersion);
+    return MessageFormat.format("ghcr.io/graalvm/graalvm-ce:{0}-{1}", javaVersion, imageVersion);
   }
 
   /**
