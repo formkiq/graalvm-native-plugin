@@ -1,5 +1,10 @@
 # Graalvm Native Plugin Releases #
 
+### Version 1.1.0 (Jan 23, 2021)
+- [Pull 9](https://github.com/formkiq/graalvm-native-plugin/pull/9)
+ * Graalvm moved Docker images from hub.docker.com to ghcr.io/graalvm
+ * Changed default GraalVM version from 20.2.0 to 21.0.0 
+
 ### Version 1.0.3 (Nov 22, 2020)
 - [Pull 7](https://github.com/formkiq/graalvm-native-plugin/pull/7)
  * Add Windows AMD 64 support
