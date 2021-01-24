@@ -22,7 +22,7 @@ import org.gradle.api.provider.Property;
 public class GraalvmNativeExtension {
 
   /** Graalvm Default Version. */
-  private static final String DEFAULT_IMAGE_VERSION = "20.2.0";
+  private static final String DEFAULT_IMAGE_VERSION = "21.0.0";
   /** Java Default Version. */
   private static final String DEFAULT_JAVA_VERSION = "java11";
 
