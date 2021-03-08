@@ -34,14 +34,14 @@ apply plugin: "com.formkiq.gradle.graalvm-native-plugin"
 
 #### Kotlin
 Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block):
-```groovy
+```kotlin
 plugins {
-    id('com.formkiq.gradle.graalvm-native-plugin') version '1.1.0'
+    id("com.formkiq.gradle.graalvm-native-plugin") version "1.1.0"
 }
 ```
 
 Using [legacy plugin application](https://docs.gradle.org/current/userguide/plugins.html#sec:old_plugin_application):
-```groovy
+```kotlin
 buildscript {
   repositories {
     maven {
