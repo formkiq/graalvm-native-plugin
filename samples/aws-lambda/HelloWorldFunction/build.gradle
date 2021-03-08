@@ -20,7 +20,7 @@ repositories {
 dependencies {
     annotationProcessor 'com.formkiq:graalvm-annotations-processor:1.0.0'
 
-    implementation 'com.formkiq:lambda-runtime-graalvm:2.2.0'
+    implementation 'com.formkiq:lambda-runtime-graalvm:2.2.2'
     implementation 'com.formkiq:graalvm-annotations:1.0.0'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
