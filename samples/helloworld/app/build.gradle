@@ -31,13 +31,13 @@ dependencies {
 application {
     // Define the main class for the application.
     mainClass = 'helloworld.App'
-    enableCheckToolchain = true
-    enableReportExceptionStackTraces = true
 }
 
 // creates binary file 'app/build/graalvm/app'
 nativeImage {
     mainClassName = 'helloworld.App'
+    enableCheckToolchain = true
+    enableReportExceptionStackTraces = true
 }
 
 build.dependsOn graalvmNativeImage
