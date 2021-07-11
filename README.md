@@ -110,6 +110,30 @@ More configuration options can be found [here](https://github.com/formkiq/graalv
 | `features` | `String` | a comma-separated list of fully qualified Feature implementation classes. |
 | `outputFileName` | `String` | Output File Name. |
 
+## Using with Windows
+
+Using the Graalvm Native Gradle plugin under Windows requires installing and using the [Microsoft C++ toolset](
+https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line).
+
+Here are some instructions (partially) plagiarized from https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line.
+
+To open a GraalVM suitable developer command prompt window
+
+On the desktop, open the Windows Start menu, and then scroll to find and open the folder for your version of Visual Studio, for example, Visual Studio 2019.
+
+In the folder, choose the "x64 Native Tools Command Prompt" for your version of Visual Studio.
+This shortcut starts a developer command prompt window that uses the default build architecture of 64-bit, x86-native tools to build 64-bit, x86-native code.
+There are other build architectures available, these do not work with GraalVM.
+
+An even faster way to open the appropriate developer command prompt,
+enter "x64 Native Tools Command Prompt" in the desktop search box.
+
+These command prompt shortcuts are installed in a version-specific Visual Studio folder in your Start menu.
+The Start menu folder and shortcut names may vary depending on the installed version of Visual Studio.
+If you set one, they also depend on the installation Nickname.
+For example, suppose you installed Visual Studio 2019, and you gave it a nickname of Latest.
+The developer command prompt shortcut is named "x64 Native Tools Command Prompt for VS 2019 (Latest)", in a folder named Visual Studio 2019.
+
 ## License
 [Apache 2](https://github.com/formkiq/graalvm-native-plugin/blob/master/LICENSE)
 
