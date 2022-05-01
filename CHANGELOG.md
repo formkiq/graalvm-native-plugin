@@ -1,5 +1,8 @@
 # Graalvm Native Plugin Releases #
 
+### Version 1.2.0 (May 1, 2022)
+ * Set Max Parallel Usages to 1
+
 ### Version 1.1.0 (Jan 23, 2021)
 - [Pull 9](https://github.com/formkiq/graalvm-native-plugin/pull/9)
  * Graalvm moved Docker images from hub.docker.com to ghcr.io/graalvm
