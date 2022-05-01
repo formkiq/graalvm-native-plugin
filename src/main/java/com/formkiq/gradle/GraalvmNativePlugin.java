@@ -15,6 +15,7 @@ package com.formkiq.gradle;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.provider.Provider;
 
 /**
  * GraalVM Plugin to build a native-image from a Java application.
@@ -26,10 +27,16 @@ public class GraalvmNativePlugin implements Plugin<Project> {
     GraalvmNativeExtension extension = project.getExtensions().create("nativeImage",
         GraalvmNativeExtension.class, project.getObjects());
 
+    Provider<GraalvmBuildService> serviceProvider = project.getGradle().getSharedServices()
+        .registerIfAbsent("web", GraalvmBuildService.class, spec -> {
+          spec.getMaxParallelUsages().set(Integer.valueOf(1));
+        });
+
     project.getTasks().create("graalvmNativeImage", GraalvmNativeTask.class, task -> {
       task.setGroup("Graalvm");
       task.setDescription("Build GraalVm Native Image");
       task.setExtension(extension);
+      task.usesService(serviceProvider);
     });
 
     project.afterEvaluate(task -> {
