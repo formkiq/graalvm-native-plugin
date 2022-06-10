@@ -100,8 +100,8 @@ public class NativeImageExecutor {
     addBooleanArgument(args, this.extension.isEnableInstallExitHandlers(),
         "--install-exit-handlers");
 
-    addBooleanArgument(args, this.extension.isEnableTraceClassInitialization(),
-        "-H:+TraceClassInitialization");
+    addStringArgument(args, this.extension.getTraceClassInitialization(),
+        "--trace-class-initialization=" + this.extension.getTraceClassInitialization());
     addBooleanArgument(args, this.extension.isEnableRemoveSaturatedTypeFlows(),
         "-H:+RemoveSaturatedTypeFlows");
     addBooleanArgument(args, this.extension.isEnableReportExceptionStackTraces(),
