@@ -61,7 +61,7 @@ public class GraalvmNativeExtension {
   /** Build statically linked executable. */
   private Property<Boolean> enableStatic;
   /** Trace Class Initialization. */
-  private Property<Boolean> enableTraceClassInitialization;
+  private Property<String> traceClassInitialization;
   /** Enable the type flow saturation analysis performance optimization. */
   private Property<Boolean> enableRemoveSaturatedTypeFlows;
   /** Show exception stack traces for exceptions during image building. */
@@ -108,7 +108,7 @@ public class GraalvmNativeExtension {
     this.enableShared = objects.property(Boolean.class);
     this.enableStatic = objects.property(Boolean.class);
     this.enableAllSecurityServices = objects.property(Boolean.class);
-    this.enableTraceClassInitialization = objects.property(Boolean.class);
+    this.traceClassInitialization = objects.property(String.class);
     this.enableRemoveSaturatedTypeFlows = objects.property(Boolean.class);
     this.systemProperty = objects.listProperty(String.class);
     this.enableReportExceptionStackTraces = objects.property(Boolean.class);
@@ -224,6 +224,33 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Get Trace Class Initialization.
+   * 
+   * @return {@link String}
+   */
+  public String getTraceClassInitialization() {
+    return this.traceClassInitialization.getOrNull();
+  }
+
+  /**
+   * Is Enable Allow Incomplete Classpath.
+   * 
+   * @return {@link Boolean}
+   */
+  public Boolean isAllowIncompleteClasspath() {
+    return this.enableAllowIncompleteClasspath.getOrElse(Boolean.FALSE);
+  }
+
+  /**
+   * Is Enable All Security Services.
+   * 
+   * @return {@link Boolean}
+   */
+  public Boolean isEnableAllSecurityServices() {
+    return this.enableAllSecurityServices.getOrElse(Boolean.FALSE);
+  }
+
+  /**
    * Is Auto Fall Back.
    * 
    * @return {@link Boolean}
@@ -242,12 +269,12 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Is Enable Allow Incomplete Classpath.
+   * Is Enable Docker Image Usage.
    * 
    * @return {@link Boolean}
    */
-  public Boolean isAllowIncompleteClasspath() {
-    return this.enableAllowIncompleteClasspath.getOrElse(Boolean.FALSE);
+  public Boolean isEnableDocker() {
+    return this.enableDocker.getOrElse(Boolean.FALSE);
   }
 
   /**
@@ -260,21 +287,12 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Is Enable All Security Services.
+   * Is Force Fallback.
    * 
    * @return {@link Boolean}
    */
-  public Boolean isEnableAllSecurityServices() {
-    return this.enableAllSecurityServices.getOrElse(Boolean.FALSE);
-  }
-
-  /**
-   * Is Enable Docker Image Usage.
-   * 
-   * @return {@link Boolean}
-   */
-  public Boolean isEnableDocker() {
-    return this.enableDocker.getOrElse(Boolean.FALSE);
+  public Boolean isEnableForceFallback() {
+    return this.enableForceFallback.getOrElse(Boolean.FALSE);
   }
 
   /**
@@ -293,33 +311,6 @@ public class GraalvmNativeExtension {
    */
   public Boolean isEnableHttps() {
     return this.enableHttps.getOrElse(Boolean.TRUE);
-  }
-
-  /**
-   * Is Enable Shared.
-   * 
-   * @return {@link Boolean}
-   */
-  public Boolean isEnableShared() {
-    return this.enableShared.getOrElse(Boolean.FALSE);
-  }
-
-  /**
-   * Is Enable Static.
-   * 
-   * @return {@link Boolean}
-   */
-  public Boolean isEnableStatic() {
-    return this.enableStatic.getOrElse(Boolean.FALSE);
-  }
-
-  /**
-   * Is Force Fallback.
-   * 
-   * @return {@link Boolean}
-   */
-  public Boolean isEnableForceFallback() {
-    return this.enableForceFallback.getOrElse(Boolean.FALSE);
   }
 
   /**
@@ -368,12 +359,21 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Is Trace Class Initialization.
+   * Is Enable Shared.
    * 
-   * @return Boolean
+   * @return {@link Boolean}
    */
-  public Boolean isEnableTraceClassInitialization() {
-    return this.enableTraceClassInitialization.getOrElse(Boolean.FALSE);
+  public Boolean isEnableShared() {
+    return this.enableShared.getOrElse(Boolean.FALSE);
+  }
+
+  /**
+   * Is Enable Static.
+   * 
+   * @return {@link Boolean}
+   */
+  public Boolean isEnableStatic() {
+    return this.enableStatic.getOrElse(Boolean.FALSE);
   }
 
   /**
@@ -395,6 +395,24 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set Allow Incomplete Classpath.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableAllowIncompleteClasspath(final Boolean enabled) {
+    this.enableAllowIncompleteClasspath.set(enabled);
+  }
+
+  /**
+   * Set Enable All Security Services.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableAllSecurityServices(final Boolean enabled) {
+    this.enableAllSecurityServices.set(enabled);
+  }
+
+  /**
    * Set Auto Fall Back.
    * 
    * @param enabled {@link Boolean}
@@ -413,48 +431,21 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Set Allow Incomplete Classpath.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableAllowIncompleteClasspath(final Boolean enabled) {
-    this.enableAllowIncompleteClasspath.set(enabled);
-  }
-
-  /**
-   * Set Enable No Fallback.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableNoFallback(final Boolean enabled) {
-    this.enableNoFallback.set(enabled);
-  }
-
-  /**
-   * Set Enable Verbose.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableVerbose(final Boolean enabled) {
-    this.enableVerbose.set(enabled);
-  }
-
-  /**
-   * Set Enable All Security Services.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableAllSecurityServices(final Boolean enabled) {
-    this.enableAllSecurityServices.set(enabled);
-  }
-
-  /**
    * Set Enable Docker Image usage.
    * 
    * @param enabled {@link Boolean}
    */
   public void setEnableDocker(final Boolean enabled) {
     this.enableDocker.set(enabled);
+  }
+
+  /**
+   * Set Force Fallback.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableForceFallback(final Boolean enabled) {
+    this.enableForceFallback.set(enabled);
   }
 
   /**
@@ -477,6 +468,60 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set Install-Exit-Handlers
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableInstallExitHandlers(final Boolean enabled) {
+    this.enableInstallExitHandlers.set(enabled);
+  }
+
+  /**
+   * Set Enable No Fallback.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableNoFallback(final Boolean enabled) {
+    this.enableNoFallback.set(enabled);
+  }
+
+  /**
+   * Set Print Analysis Call Tree.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnablePrintAnalysisCallTree(final Boolean enabled) {
+    this.enablePrintAnalysisCallTree.set(enabled);
+  }
+
+  /**
+   * Set Remove Saturated Type Flows.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableRemoveSaturatedTypeFlows(final Boolean enabled) {
+    this.enableRemoveSaturatedTypeFlows.set(enabled);
+  }
+
+  /**
+   * Set Report Exception Stack Traces.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableReportExceptionStackTraces(Boolean enabled) {
+    this.enableReportExceptionStackTraces.set(enabled);
+  }
+
+  /**
+   * Set Report Unsupported Elements At Runtime.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableReportUnsupportedElementsAtRuntime(Boolean enabled) {
+    this.enableReportUnsupportedElementsAtRuntime.set(enabled);
+  }
+
+  /**
    * Set Enable Shared.
    * 
    * @param enabled {@link Boolean}
@@ -495,21 +540,30 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set Trace Class Initialization.
+   * 
+   * @param classInitialization {@link String}
+   */
+  public void setTraceClassInitialization(final String classInitialization) {
+    this.traceClassInitialization.set(classInitialization);
+  }
+
+  /**
+   * Set Enable Verbose.
+   * 
+   * @param enabled {@link Boolean}
+   */
+  public void setEnableVerbose(final Boolean enabled) {
+    this.enableVerbose.set(enabled);
+  }
+
+  /**
    * Set Features.
    * 
    * @param feature {@link String}
    */
   public void setFeatures(final String feature) {
     this.features.set(feature);
-  }
-
-  /**
-   * Set Force Fallback.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableForceFallback(final Boolean enabled) {
-    this.enableForceFallback.set(enabled);
   }
 
   /**
@@ -549,15 +603,6 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Set Install-Exit-Handlers
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableInstallExitHandlers(final Boolean enabled) {
-    this.enableInstallExitHandlers.set(enabled);
-  }
-
-  /**
    * Set Java Version.
    * 
    * @param version {@link String}
@@ -585,15 +630,6 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Set Print Analysis Call Tree.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnablePrintAnalysisCallTree(final Boolean enabled) {
-    this.enablePrintAnalysisCallTree.set(enabled);
-  }
-
-  /**
    * Set Reflection Config File.
    * 
    * @param configFile {@link String}
@@ -603,48 +639,12 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Set Remove Saturated Type Flows.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableRemoveSaturatedTypeFlows(final Boolean enabled) {
-    this.enableRemoveSaturatedTypeFlows.set(enabled);
-  }
-
-  /**
-   * Set Report Exception Stack Traces.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableReportExceptionStackTraces(Boolean enabled) {
-    this.enableReportExceptionStackTraces.set(enabled);
-  }
-
-  /**
-   * Set Report Unsupported Elements At Runtime.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableReportUnsupportedElementsAtRuntime(Boolean enabled) {
-    this.enableReportUnsupportedElementsAtRuntime.set(enabled);
-  }
-
-  /**
    * Set System Property.
    * 
    * @param list {@link List} {@link String}
    */
   public void setSystemProperty(final List<String> list) {
     this.systemProperty.set(list);
-  }
-
-  /**
-   * Set Trace Class Initialization.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableTraceClassInitialization(final Boolean enabled) {
-    this.enableTraceClassInitialization.set(enabled);
   }
 
 }
