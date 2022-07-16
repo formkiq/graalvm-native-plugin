@@ -96,9 +96,10 @@ public class NativeImageExecutor {
 
     String serializationConfig = this.extension.getSerializationConfig();
     if (serializationConfig != null) {
-      addStringArgument(args, serializationConfig, "-H:SerializationConfigurationResources=" + serializationConfig);
+      addStringArgument(args, serializationConfig,
+          "-H:SerializationConfigurationResources=" + serializationConfig);
     }
-    
+
     addStringArgument(args, this.extension.getFeatures(),
         "--features=" + this.extension.getFeatures());
 

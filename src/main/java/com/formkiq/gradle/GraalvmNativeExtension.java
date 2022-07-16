@@ -37,7 +37,7 @@ public class GraalvmNativeExtension {
   /** Check if native-toolchain is known to work with native-image. */
   private Property<Boolean> enableCheckToolchain;
   /** Enable using Graalvm Docker Image. */
-  private Property<Boolean> enableDocker;  
+  private Property<Boolean> enableDocker;
   /** Force building of fallback image. */
   private Property<Boolean> enableForceFallback;
   /** Enable http support in the generated image. */
@@ -225,7 +225,7 @@ public class GraalvmNativeExtension {
   public String getSerializationConfig() {
     return this.serializationConfig.getOrNull();
   }
-  
+
   /**
    * Get System Property.
    * 
@@ -658,7 +658,7 @@ public class GraalvmNativeExtension {
   public void setSystemProperty(final List<String> list) {
     this.systemProperty.set(list);
   }
-  
+
   /**
    * Set Trace Class Initialization.
    * 
