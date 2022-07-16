@@ -26,64 +26,66 @@ public class GraalvmNativeExtension {
   /** Java Default Version. */
   private static final String DEFAULT_JAVA_VERSION = "java11";
 
-  /** Java Version. */
-  private Property<String> javaVersion;
-  /** Graalvm Version. */
-  private Property<String> imageVersion;
-  /** Local Image File to Use. */
-  private Property<String> imageFile;
-  /** Class Name with main() method. */
-  private Property<String> mainClassName;
-  /** Reflection Config File. */
-  private Property<String> reflectionConfig;
+  /** Additional Classpaths comma separated. */
+  private Property<String> addClasspath;
+  /** Allow image building with an incomplete class path. */
+  private Property<Boolean> enableAllowIncompleteClasspath;
+  /** Add all security service classes to the generated image. */
+  private Property<Boolean> enableAllSecurityServices;
+  /** Build stand-alone image if possible. */
+  private Property<Boolean> enableAutoFallback;
+  /** Check if native-toolchain is known to work with native-image. */
+  private Property<Boolean> enableCheckToolchain;
+  /** Enable using Graalvm Docker Image. */
+  private Property<Boolean> enableDocker;  
+  /** Force building of fallback image. */
+  private Property<Boolean> enableForceFallback;
   /** Enable http support in the generated image. */
   private Property<Boolean> enableHttp;
   /** Enable https support in the generated image. */
   private Property<Boolean> enableHttps;
-  /** Enable verbose output. */
-  private Property<Boolean> enableVerbose;
-  /** Build stand-alone image if possible. */
-  private Property<Boolean> enableAutoFallback;
-  /** Add all security service classes to the generated image. */
-  private Property<Boolean> enableAllSecurityServices;
-  /** Force building of fallback image. */
-  private Property<Boolean> enableForceFallback;
-  /** List of packages and classes that are initialized during image generation. */
-  private ListProperty<String> initializeAtBuildTime;
-  /** List of packages and classes that are initialized at runtime. */
-  private ListProperty<String> initializeAtRunTime;
-  /** Java System Properties. */
-  private ListProperty<String> systemProperty;
   /** Provide java.lang.Terminator exit handlers for executable images. */
   private Property<Boolean> enableInstallExitHandlers;
-  /** Build shared library. */
-  private Property<Boolean> enableShared;
-  /** Build statically linked executable. */
-  private Property<Boolean> enableStatic;
-  /** Trace Class Initialization. */
-  private Property<String> traceClassInitialization;
+  /** Build stand-alone image or report failure. */
+  private Property<Boolean> enableNoFallback;
+  /** Print analysis call tree. */
+  private Property<Boolean> enablePrintAnalysisCallTree;
   /** Enable the type flow saturation analysis performance optimization. */
   private Property<Boolean> enableRemoveSaturatedTypeFlows;
   /** Show exception stack traces for exceptions during image building. */
   private Property<Boolean> enableReportExceptionStackTraces;
-  /** Print analysis call tree. */
-  private Property<Boolean> enablePrintAnalysisCallTree;
-  /** Check if native-toolchain is known to work with native-image. */
-  private Property<Boolean> enableCheckToolchain;
   /** Report usage of unsupported methods and fields at run time. */
   private Property<Boolean> enableReportUnsupportedElementsAtRuntime;
-  /** Additional Classpaths comma separated. */
-  private Property<String> addClasspath;
+  /** Build shared library. */
+  private Property<Boolean> enableShared;
+  /** Build statically linked executable. */
+  private Property<Boolean> enableStatic;
+  /** Enable verbose output. */
+  private Property<Boolean> enableVerbose;
   /** a comma-separated list of fully qualified Feature implementation classes. */
   private Property<String> features;
+  /** Local Image File to Use. */
+  private Property<String> imageFile;
+  /** Graalvm Version. */
+  private Property<String> imageVersion;
+  /** List of packages and classes that are initialized during image generation. */
+  private ListProperty<String> initializeAtBuildTime;
+  /** List of packages and classes that are initialized at runtime. */
+  private ListProperty<String> initializeAtRunTime;
+  /** Java Version. */
+  private Property<String> javaVersion;
+  /** Class Name with main() method. */
+  private Property<String> mainClassName;
   /** Output File Name. */
   private Property<String> outputFileName;
-  /** Enable using Graalvm Docker Image. */
-  private Property<Boolean> enableDocker;
-  /** Allow image building with an incomplete class path. */
-  private Property<Boolean> enableAllowIncompleteClasspath;
-  /** Build stand-alone image or report failure. */
-  private Property<Boolean> enableNoFallback;
+  /** Reflection Config File. */
+  private Property<String> reflectionConfig;
+  /** Reflection Config File. */
+  private Property<String> serializationConfig;
+  /** Java System Properties. */
+  private ListProperty<String> systemProperty;
+  /** Trace Class Initialization. */
+  private Property<String> traceClassInitialization;
 
   /**
    * constructor.
@@ -96,6 +98,7 @@ public class GraalvmNativeExtension {
     this.imageVersion = objects.property(String.class);
     this.mainClassName = objects.property(String.class);
     this.reflectionConfig = objects.property(String.class);
+    this.serializationConfig = objects.property(String.class);
     this.enableHttp = objects.property(Boolean.class);
     this.enableHttps = objects.property(Boolean.class);
     this.enableVerbose = objects.property(Boolean.class);
@@ -214,6 +217,15 @@ public class GraalvmNativeExtension {
     return this.reflectionConfig.getOrNull();
   }
 
+  /**
+   * Get Serialization Config File.
+   * 
+   * @return {@link String}
+   */
+  public String getSerializationConfig() {
+    return this.serializationConfig.getOrNull();
+  }
+  
   /**
    * Get System Property.
    * 
@@ -540,15 +552,6 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Set Trace Class Initialization.
-   * 
-   * @param classInitialization {@link String}
-   */
-  public void setTraceClassInitialization(final String classInitialization) {
-    this.traceClassInitialization.set(classInitialization);
-  }
-
-  /**
    * Set Enable Verbose.
    * 
    * @param enabled {@link Boolean}
@@ -639,12 +642,30 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set Serialization Config File.
+   * 
+   * @param configFile {@link String}
+   */
+  public void setSerializationConfig(final String configFile) {
+    this.serializationConfig.set(configFile);
+  }
+
+  /**
    * Set System Property.
    * 
    * @param list {@link List} {@link String}
    */
   public void setSystemProperty(final List<String> list) {
     this.systemProperty.set(list);
+  }
+  
+  /**
+   * Set Trace Class Initialization.
+   * 
+   * @param classInitialization {@link String}
+   */
+  public void setTraceClassInitialization(final String classInitialization) {
+    this.traceClassInitialization.set(classInitialization);
   }
 
 }
