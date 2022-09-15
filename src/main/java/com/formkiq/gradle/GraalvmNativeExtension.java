@@ -28,6 +28,8 @@ public class GraalvmNativeExtension {
 
   /** Additional Classpaths comma separated. */
   private Property<String> addClasspath;
+  /** Enable Add All Charsets. */
+  private Property<Boolean> enableAddAllCharsets;
   /** Allow image building with an incomplete class path. */
   private Property<Boolean> enableAllowIncompleteClasspath;
   /** Add all security service classes to the generated image. */
@@ -74,12 +76,16 @@ public class GraalvmNativeExtension {
   private ListProperty<String> initializeAtRunTime;
   /** Java Version. */
   private Property<String> javaVersion;
+  /** JNI Config File. */
+  private Property<String> jniConfigurationFiles;
   /** Class Name with main() method. */
   private Property<String> mainClassName;
   /** Output File Name. */
   private Property<String> outputFileName;
   /** Reflection Config File. */
   private Property<String> reflectionConfig;
+  /** Resource Configuration Files. */
+  private Property<String> resourceConfigurationFiles;
   /** Reflection Config File. */
   private Property<String> serializationConfig;
   /** Java System Properties. */
@@ -99,8 +105,11 @@ public class GraalvmNativeExtension {
     this.mainClassName = objects.property(String.class);
     this.reflectionConfig = objects.property(String.class);
     this.serializationConfig = objects.property(String.class);
+    this.jniConfigurationFiles = objects.property(String.class);
+    this.resourceConfigurationFiles = objects.property(String.class);
     this.enableHttp = objects.property(Boolean.class);
     this.enableHttps = objects.property(Boolean.class);
+    this.enableAddAllCharsets = objects.property(Boolean.class);
     this.enableVerbose = objects.property(Boolean.class);
     this.enableAutoFallback = objects.property(Boolean.class);
     this.enableForceFallback = objects.property(Boolean.class);
@@ -191,6 +200,14 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Get JNI Configuration Files.
+   * @return {@link String}
+   */
+  public String getJniConfigurationFiles() {
+    return this.jniConfigurationFiles.getOrNull();
+  }
+  
+  /**
    * Get Main Class Name.
    * 
    * @return {@link String}
@@ -217,6 +234,14 @@ public class GraalvmNativeExtension {
     return this.reflectionConfig.getOrNull();
   }
 
+  /**
+   * Get Resource Configuration Files.
+   * @return {@link String}
+   */
+  public String getResourceConfigurationFiles() {
+    return this.resourceConfigurationFiles.getOrNull();
+  }
+  
   /**
    * Get Serialization Config File.
    * 
@@ -251,6 +276,14 @@ public class GraalvmNativeExtension {
    */
   public Boolean isAllowIncompleteClasspath() {
     return this.enableAllowIncompleteClasspath.getOrElse(Boolean.FALSE);
+  }
+
+  /**
+   * Enable Add All Charsets.
+   * @return {@link Boolean}
+   */
+  public Boolean isEnableAddAllCharsets() {
+    return this.enableAddAllCharsets.getOrElse(Boolean.FALSE);
   }
 
   /**
@@ -315,7 +348,7 @@ public class GraalvmNativeExtension {
   public Boolean isEnableHttp() {
     return this.enableHttp.getOrElse(Boolean.TRUE);
   }
-
+  
   /**
    * Is Enable Https.
    * 
@@ -407,6 +440,15 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set Enable AddAllCharsets.
+   * 
+   * @param enabled Boolean
+   */
+  public void setEnableAddAllCharsets(final Boolean enabled) {
+    this.enableAddAllCharsets.set(enabled);
+  }
+
+  /**
    * Set Allow Incomplete Classpath.
    * 
    * @param enabled {@link Boolean}
@@ -469,7 +511,7 @@ public class GraalvmNativeExtension {
   public void setEnableHttp(final Boolean enabled) {
     this.enableHttp.set(enabled);
   }
-
+  
   /**
    * Set Enable Https.
    * 
@@ -615,6 +657,15 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set JNI Config File.
+   * 
+   * @param configFile {@link String}
+   */
+  public void setJniConfigurationFiles(final String configFile) {
+    this.jniConfigurationFiles.set(configFile);
+  }
+
+  /**
    * Set Main Class Name.
    * 
    * @param className {@link String}
@@ -642,6 +693,15 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set Resource Config File.
+   * 
+   * @param configFile {@link String}
+   */
+  public void setResourceConfigurationFiles(final String configFile) {
+    this.resourceConfigurationFiles.set(configFile);
+  }
+  
+  /**
    * Set Serialization Config File.
    * 
    * @param configFile {@link String}
@@ -649,7 +709,7 @@ public class GraalvmNativeExtension {
   public void setSerializationConfig(final String configFile) {
     this.serializationConfig.set(configFile);
   }
-
+  
   /**
    * Set System Property.
    * 
