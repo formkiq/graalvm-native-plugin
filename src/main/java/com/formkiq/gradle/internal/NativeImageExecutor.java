@@ -80,6 +80,7 @@ public class NativeImageExecutor {
     addBooleanArgument(args, this.extension.isEnableShared(), "--shared");
     addBooleanArgument(args, this.extension.isEnableStatic(), "--static");
 
+    addBooleanArgument(args, this.extension.isEnableAddAllCharsets(), "-H:+AddAllCharsets");
     addStringListArgument(args, this.extension.getInitializeAtBuildTime(),
         "--initialize-at-build-time");
     addStringListArgument(args, this.extension.getInitializeAtRunTime(),
@@ -100,6 +101,16 @@ public class NativeImageExecutor {
           "-H:SerializationConfigurationResources=" + serializationConfig);
     }
 
+    String jniConfig = this.extension.getJniConfigurationFiles();
+    if (jniConfig != null) {
+      addStringArgument(args, jniConfig, "-H:JNIConfigurationFiles=" + jniConfig);
+    }
+    
+    String resourceConfig = this.extension.getResourceConfigurationFiles();
+    if (resourceConfig != null) {
+      addStringArgument(args, resourceConfig, "-H:ResourceConfigurationFiles=" + resourceConfig);
+    }
+    
     addStringArgument(args, this.extension.getFeatures(),
         "--features=" + this.extension.getFeatures());
 
