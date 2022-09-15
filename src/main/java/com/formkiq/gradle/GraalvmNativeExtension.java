@@ -201,12 +201,13 @@ public class GraalvmNativeExtension {
 
   /**
    * Get JNI Configuration Files.
+   * 
    * @return {@link String}
    */
   public String getJniConfigurationFiles() {
     return this.jniConfigurationFiles.getOrNull();
   }
-  
+
   /**
    * Get Main Class Name.
    * 
@@ -236,12 +237,13 @@ public class GraalvmNativeExtension {
 
   /**
    * Get Resource Configuration Files.
+   * 
    * @return {@link String}
    */
   public String getResourceConfigurationFiles() {
     return this.resourceConfigurationFiles.getOrNull();
   }
-  
+
   /**
    * Get Serialization Config File.
    * 
@@ -280,6 +282,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Enable Add All Charsets.
+   * 
    * @return {@link Boolean}
    */
   public Boolean isEnableAddAllCharsets() {
@@ -348,7 +351,7 @@ public class GraalvmNativeExtension {
   public Boolean isEnableHttp() {
     return this.enableHttp.getOrElse(Boolean.TRUE);
   }
-  
+
   /**
    * Is Enable Https.
    * 
@@ -511,7 +514,7 @@ public class GraalvmNativeExtension {
   public void setEnableHttp(final Boolean enabled) {
     this.enableHttp.set(enabled);
   }
-  
+
   /**
    * Set Enable Https.
    * 
@@ -700,7 +703,7 @@ public class GraalvmNativeExtension {
   public void setResourceConfigurationFiles(final String configFile) {
     this.resourceConfigurationFiles.set(configFile);
   }
-  
+
   /**
    * Set Serialization Config File.
    * 
@@ -709,7 +712,7 @@ public class GraalvmNativeExtension {
   public void setSerializationConfig(final String configFile) {
     this.serializationConfig.set(configFile);
   }
-  
+
   /**
    * Set System Property.
    * 

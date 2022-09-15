@@ -105,12 +105,12 @@ public class NativeImageExecutor {
     if (jniConfig != null) {
       addStringArgument(args, jniConfig, "-H:JNIConfigurationFiles=" + jniConfig);
     }
-    
+
     String resourceConfig = this.extension.getResourceConfigurationFiles();
     if (resourceConfig != null) {
       addStringArgument(args, resourceConfig, "-H:ResourceConfigurationFiles=" + resourceConfig);
     }
-    
+
     addStringArgument(args, this.extension.getFeatures(),
         "--features=" + this.extension.getFeatures());
 
