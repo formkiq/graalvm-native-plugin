@@ -25,7 +25,6 @@ public class GraalvmBuildService implements BuildService<BuildServiceParameters.
 
   @Override
   public None getParameters() {
-    // TODO Auto-generated method stub
     return null;
   }
 
