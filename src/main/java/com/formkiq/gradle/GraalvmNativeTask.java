@@ -40,7 +40,7 @@ import com.formkiq.gradle.internal.NativeImageExecutor;
 public class GraalvmNativeTask extends DefaultTask {
 
   /** Supported Java Versions. */
-  private static final List<String> SUPPORTED_JAVA_VERSIONS = Arrays.asList("java11", "java8");
+  private static final List<String> SUPPORTED_JAVA_VERSIONS = Arrays.asList("java11", "java8", "java17");
 
   /** {@link GraalvmNativeExtension}. */
   private GraalvmNativeExtension extension;
