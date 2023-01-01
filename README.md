@@ -12,7 +12,7 @@ Supports for building Java applications as GraalVM native images.
 Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block):
 ```groovy
 plugins {
-    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.2.0'
+    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.4.0'
 }
 ```
 
@@ -25,7 +25,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.formkiq.gradle:graalvm-native-plugin:1.2.0"
+    classpath "com.formkiq.gradle:graalvm-native-plugin:1.4.0"
   }
 }
 
@@ -36,7 +36,7 @@ apply plugin: "com.formkiq.gradle.graalvm-native-plugin"
 Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block):
 ```kotlin
 plugins {
-    id("com.formkiq.gradle.graalvm-native-plugin") version "1.2.0"
+    id("com.formkiq.gradle.graalvm-native-plugin") version "1.4.0"
 }
 ```
 
@@ -49,7 +49,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath("com.formkiq.gradle:graalvm-native-plugin:1.2.0")
+    classpath("com.formkiq.gradle:graalvm-native-plugin:1.4.0")
   }
 }
 
@@ -81,6 +81,7 @@ More configuration options can be found [here](https://github.com/formkiq/graalv
 |----------|------|-------------|
 | `imageVersion` | `String` | The GraalVM Community Edition version to download. Default to `20.2.0`. |
 | `javaVersion` | `String` | The JDK version to be downloaded with GraalVM Community Edition. Default to `11`. |
+| `dockerImage` | `String` | Graalvm Docker Image build using. |
 | `imageFile` | `String` | A local Image File to instead of downloading a file based on imageVersion/javaVersion/architecture. |
 | `mainClassName` (Required) | `String` | The fully qualified name of the Java class that contains a `main` method for the entry point of the Native Image executable. |
 | `enableTraceClassInitialization` | `boolean` | Provides useful information to debug class initialization issues. |
@@ -91,7 +92,6 @@ More configuration options can be found [here](https://github.com/formkiq/graalv
 | `enableHttp` | `boolean` | Enables HTTP support in the generated image. |
 | `enableHttps` | `boolean` | Enables HTTPS support in the generated image. |
 | `enableVerbose` | `boolean` | Makes image building output more verbose. |
-| `enableDocker` | `String` | Enable using Graalvm Docker Image. |
 | `enableAllowIncompleteClasspath` | `boolean` | Allow image building with an incomplete class path. |
 | `enableNoFallback` | `boolean` | Build stand-alone image or report failure. |
 | `enableAutoFallback` | `boolean` | Build stand-alone image if possible. |

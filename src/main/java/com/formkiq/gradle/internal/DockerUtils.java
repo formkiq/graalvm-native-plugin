@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,16 +41,26 @@ public class DockerUtils {
    * Exec Docker.
    * 
    * @param project {@link Project}
+   * @param workingDir {@link String}
    * @param args {@link List}
    * @return boolean
    * @throws IOException IOException
    */
-  public boolean exec(final Project project, final List<String> args) throws IOException {
+  public boolean exec(final Project project, final String workingDir, final List<String> args)
+      throws IOException {
 
     List<String> a = new ArrayList<>();
     a.add("exec");
+
+    if (workingDir != null) {
+      a.add("--workdir");
+      a.add(workingDir);
+    }
+
     a.add(this.containerId);
     a.addAll(args);
+
+    project.getLogger().lifecycle("running: docker " + String.join(" ", a));
 
     ExecResult result = project.exec(new Action<ExecSpec>() {
       @Override
@@ -61,31 +70,38 @@ public class DockerUtils {
       }
     });
 
-    project.getLogger().debug(result.toString());
-    return result.getExitValue() == 0;
-  }
+    project.getLogger().lifecycle("result: " + result.toString());
 
-  private String getImageName(final String imageVersion, final String javaVersion) {
-    return MessageFormat.format("ghcr.io/graalvm/graalvm-ce:{0}-{1}", javaVersion, imageVersion);
+    return result.getExitValue() == 0;
   }
 
   /**
    * Is Docker Installed in the system.
    * 
    * @param project {@link Project}
-   * @return boolean
+   * 
    * @throws IOException IOException
    */
-  public boolean isDockerInstalled(final Project project) throws IOException {
-    ExecResult result = project.exec(new Action<ExecSpec>() {
-      @Override
-      public void execute(ExecSpec arg0) {
-        arg0.setCommandLine("docker");
-        arg0.args("--version");
+  public void isDockerInstalled(final Project project) throws IOException {
+
+    try {
+      ExecResult result = project.exec(new Action<ExecSpec>() {
+        @Override
+        public void execute(ExecSpec arg0) {
+          arg0.setCommandLine("docker");
+          arg0.args("--version");
+        }
+      });
+
+      if (result.getExitValue() != 0) {
+        throw new IOException(
+            "Cannot find a running 'Docker', exit code: " + result.getExitValue());
       }
-    });
-    project.getLogger().debug(result.toString());
-    return result.getExitValue() == 0;
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new IOException("Cannot find a running 'Docker'");
+    }
   }
 
   /**
@@ -97,13 +113,12 @@ public class DockerUtils {
    * @return boolean
    * @throws IOException IOException
    */
-  private boolean pullImage(final Project project, final String imageVersion,
-      final String javaVersion) throws IOException {
+  private boolean pullImage(final Project project, final String dockerImage) throws IOException {
     ExecResult result = project.exec(new Action<ExecSpec>() {
       @Override
       public void execute(ExecSpec arg0) {
         arg0.setCommandLine("docker");
-        arg0.args(Arrays.asList("pull", getImageName(imageVersion, javaVersion)));
+        arg0.args(Arrays.asList("pull", dockerImage));
       }
     });
     project.getLogger().debug(result.toString());
@@ -122,9 +137,8 @@ public class DockerUtils {
   public boolean startImage(final Project project, final GraalvmNativeExtension extension,
       final List<File> classPaths) throws IOException {
 
-    String imageVersion = extension.getImageVersion();
-    String javaVersion = extension.getJavaVersion();
-    pullImage(project, imageVersion, javaVersion);
+    String dockerImage = extension.getDockerImage();
+    pullImage(project, dockerImage);
 
     ByteArrayOutputStream so = new ByteArrayOutputStream();
 
@@ -154,9 +168,11 @@ public class DockerUtils {
           throw new RuntimeException(e);
         }
 
-        args.addAll(Arrays.asList(getImageName(imageVersion, javaVersion), "sleep", "infinity"));
+        args.addAll(Arrays.asList(dockerImage, "sleep", "infinity"));
 
         arg0.args(args);
+
+        project.getLogger().lifecycle("docker " + String.join(" ", args));
       }
 
       /**

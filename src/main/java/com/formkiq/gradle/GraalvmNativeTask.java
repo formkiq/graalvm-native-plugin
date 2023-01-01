@@ -81,9 +81,7 @@ public class GraalvmNativeTask extends DefaultTask {
 
       if (this.extension.getDockerImage() != null) {
         DockerUtils docker = new DockerUtils();
-        if (!docker.isDockerInstalled(getProject())) {
-          throw new ResourceException("Cannot find Docker command in path");
-        }
+        docker.isDockerInstalled(getProject());
       }
 
       if (decompressed) {

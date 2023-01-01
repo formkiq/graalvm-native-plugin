@@ -30,12 +30,12 @@ dependencies {
 }
 
 nativeImage { 
-    version = "20.2.0"
     mainClassName = "com.formkiq.lambda.runtime.graalvm.LambdaRuntime"
+    dockerImage = "ghcr.io/graalvm/graalvm-ce:ol9-java17-22.3.1"
     outputFileName = "server"
     enableHttp = true
     enableHttps = true
-    enableDocker = true
+    enableStatic = true
     reflectionConfig = "$buildDir/classes/java/main/META-INF/graal/reflect.json"
 }
 
