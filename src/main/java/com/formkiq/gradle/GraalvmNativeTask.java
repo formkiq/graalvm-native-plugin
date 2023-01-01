@@ -70,17 +70,16 @@ public class GraalvmNativeTask extends DefaultTask {
       Path toFile = this.extension.getImageFile() != null ? Path.of(this.extension.getImageFile())
           : Path.of(buildDir.getAbsolutePath(), getFilename());
 
-      if (!this.extension.isEnableDocker().booleanValue()
-          && this.extension.getImageFile() == null) {
+      if (this.extension.getDockerImage() == null && this.extension.getImageFile() == null) {
         new Downloader().download(getDownloadUrl(), toFile);
       }
 
       NativeImageExecutor executor = new NativeImageExecutor(this.extension);
 
-      boolean decompressed = this.extension.isEnableDocker().booleanValue()
+      boolean decompressed = this.extension.getDockerImage() != null
           || new ArchiveUtils().decompress(toFile.toFile(), buildDir);
 
-      if (this.extension.isEnableDocker().booleanValue()) {
+      if (this.extension.getDockerImage() != null) {
         DockerUtils docker = new DockerUtils();
         if (!docker.isDockerInstalled(getProject())) {
           throw new ResourceException("Cannot find Docker command in path");

@@ -39,7 +39,7 @@ public class GraalvmNativeExtension {
   /** Check if native-toolchain is known to work with native-image. */
   private Property<Boolean> enableCheckToolchain;
   /** Enable using Graalvm Docker Image. */
-  private Property<Boolean> enableDocker;
+  private Property<String> dockerImage;
   /** Force building of fallback image. */
   private Property<Boolean> enableForceFallback;
   /** Enable http support in the generated image. */
@@ -131,7 +131,7 @@ public class GraalvmNativeExtension {
     this.addClasspath = objects.property(String.class);
     this.features = objects.property(String.class);
     this.outputFileName = objects.property(String.class);
-    this.enableDocker = objects.property(Boolean.class);
+    this.dockerImage = objects.property(String.class);
     this.enableAllowIncompleteClasspath = objects.property(Boolean.class);
     this.enableNoFallback = objects.property(Boolean.class);
   }
@@ -319,10 +319,10 @@ public class GraalvmNativeExtension {
   /**
    * Is Enable Docker Image Usage.
    * 
-   * @return {@link Boolean}
+   * @return {@link String}
    */
-  public Boolean isEnableDocker() {
-    return this.enableDocker.getOrElse(Boolean.FALSE);
+  public String getDockerImage() {
+    return this.dockerImage.getOrNull();
   }
 
   /**
@@ -490,10 +490,10 @@ public class GraalvmNativeExtension {
   /**
    * Set Enable Docker Image usage.
    * 
-   * @param enabled {@link Boolean}
+   * @param imageName {@link String}
    */
-  public void setEnableDocker(final Boolean enabled) {
-    this.enableDocker.set(enabled);
+  public void setDockerImage(final String imageName) {
+    this.dockerImage.set(imageName);
   }
 
   /**

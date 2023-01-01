@@ -191,7 +191,7 @@ public class NativeImageExecutor {
 
     List<String> args = getBuildGraalvmImageArguments(project, outputDir);
 
-    if (this.extension.isEnableDocker().booleanValue()) {
+    if (this.extension.getDockerImage() != null) {
 
       List<String> a = new ArrayList<>();
       a.add("native-image");
@@ -261,7 +261,7 @@ public class NativeImageExecutor {
   public boolean runGuInstallation(final Project project, final File graalvmBaseDir)
       throws IOException {
 
-    if (this.extension.isEnableDocker().booleanValue()) {
+    if (this.extension.getDockerImage() != null) {
 
       this.docker.exec(project, Arrays.asList("gu", "install", "native-image"));
 
@@ -297,7 +297,7 @@ public class NativeImageExecutor {
 
     buildGraalvmImage(project, graalvmBaseDir, outputDir);
 
-    if (this.extension.isEnableDocker().booleanValue()) {
+    if (this.extension.getDockerImage() != null) {
       this.docker.copy(project, new File("/" + getExecutableName(project)), outputDir);
     }
   }
@@ -311,7 +311,7 @@ public class NativeImageExecutor {
    */
   public void start(final Project project, File outputDir) throws IOException {
 
-    if (this.extension.isEnableDocker().booleanValue()) {
+    if (this.extension.getDockerImage() != null) {
       this.docker.startImage(project, this.extension, buildClassPath(project));
     }
   }
@@ -323,7 +323,7 @@ public class NativeImageExecutor {
    * @throws IOException IOException
    */
   public void stop(final Project project) throws IOException {
-    if (this.extension.isEnableDocker().booleanValue()) {
+    if (this.extension.getDockerImage() != null) {
       this.docker.stopImage(project);
     }
   }
