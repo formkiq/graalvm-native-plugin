@@ -28,6 +28,8 @@ public class GraalvmNativeExtension {
 
   /** Additional Classpaths comma separated. */
   private Property<String> addClasspath;
+  /** Enable using Graalvm Docker Image. */
+  private Property<String> dockerImage;
   /** Enable Add All Charsets. */
   private Property<Boolean> enableAddAllCharsets;
   /** Allow image building with an incomplete class path. */
@@ -38,8 +40,6 @@ public class GraalvmNativeExtension {
   private Property<Boolean> enableAutoFallback;
   /** Check if native-toolchain is known to work with native-image. */
   private Property<Boolean> enableCheckToolchain;
-  /** Enable using Graalvm Docker Image. */
-  private Property<Boolean> enableDocker;
   /** Force building of fallback image. */
   private Property<Boolean> enableForceFallback;
   /** Enable http support in the generated image. */
@@ -131,18 +131,27 @@ public class GraalvmNativeExtension {
     this.addClasspath = objects.property(String.class);
     this.features = objects.property(String.class);
     this.outputFileName = objects.property(String.class);
-    this.enableDocker = objects.property(Boolean.class);
+    this.dockerImage = objects.property(String.class);
     this.enableAllowIncompleteClasspath = objects.property(Boolean.class);
     this.enableNoFallback = objects.property(Boolean.class);
   }
 
   /**
    * Returns additional classpaths.
-   *
+   * 
    * @return {@link String}
    */
   public String getAddClasspath() {
     return this.addClasspath.getOrNull();
+  }
+
+  /**
+   * Is Enable Docker Image Usage.
+   * 
+   * @return {@link String}
+   */
+  public String getDockerImage() {
+    return this.dockerImage.getOrNull();
   }
 
   /**
@@ -317,15 +326,6 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Is Enable Docker Image Usage.
-   * 
-   * @return {@link Boolean}
-   */
-  public Boolean isEnableDocker() {
-    return this.enableDocker.getOrElse(Boolean.FALSE);
-  }
-
-  /**
    * Is Fallback.
    * 
    * @return {@link Boolean}
@@ -443,6 +443,15 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set Enable Docker Image usage.
+   * 
+   * @param imageName {@link String}
+   */
+  public void setDockerImage(final String imageName) {
+    this.dockerImage.set(imageName);
+  }
+
+  /**
    * Set Enable AddAllCharsets.
    * 
    * @param enabled Boolean
@@ -485,15 +494,6 @@ public class GraalvmNativeExtension {
    */
   public void setEnableCheckToolchain(final Boolean enabled) {
     this.enableCheckToolchain.set(enabled);
-  }
-
-  /**
-   * Set Enable Docker Image usage.
-   * 
-   * @param enabled {@link Boolean}
-   */
-  public void setEnableDocker(final Boolean enabled) {
-    this.enableDocker.set(enabled);
   }
 
   /**

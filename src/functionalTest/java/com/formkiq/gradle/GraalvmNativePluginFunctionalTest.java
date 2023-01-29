@@ -94,7 +94,8 @@ public class GraalvmNativePluginFunctionalTest {
     writeString(new File(projectDir, "build.gradle"),
         "plugins {" + "  id('com.formkiq.gradle.graalvm-native-plugin')\n" + "id('java-library')\n"
             + " }\n" + "nativeImage {\n" + " addClasspath = '"
-            + classpath.toFile().getCanonicalPath() + "'\n" + " enableDocker = true\n"
+            + classpath.toFile().getCanonicalPath() + "'\n"
+            + " dockerImage = 'ghcr.io/graalvm/graalvm-ce:ol9-java17-22.3.1'\n"
             + " mainClassName = 'com.formkiq.gradle.Test'\n" + "}");
 
     // when
