@@ -172,8 +172,8 @@ public class DockerUtils {
             cp -> args.addAll(Arrays.asList("-v", formatToUnix(cp) + ":" + formatToUnix(cp))));
 
         if (extension.getReflectionConfig() != null) {
-          args.addAll(Arrays.asList("-v",
-              formatToUnix(extension.getReflectionConfig()) + ":" + formatToUnix(extension.getReflectionConfig())));
+          args.addAll(Arrays.asList("-v", formatToUnix(extension.getReflectionConfig()) + ":"
+              + formatToUnix(extension.getReflectionConfig())));
         }
 
         try {
