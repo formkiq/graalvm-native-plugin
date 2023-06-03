@@ -55,7 +55,7 @@ public class DockerUtils {
 
     if (workingDir != null) {
       a.add("--workdir");
-      a.add(workingDir);
+      a.add(formatToUnix(workingDir));
     }
 
     a.add(this.containerId);
