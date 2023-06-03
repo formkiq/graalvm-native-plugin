@@ -108,17 +108,28 @@ public class DockerUtils {
    * Pull Docker Image.
    * 
    * @param project {@link Project}
+   * @param extension {@link GraalvmNativeExtension}
    * @param imageVersion {@link String}
    * @param javaVersion {@link String}
    * @return boolean
    * @throws IOException IOException
    */
-  private boolean pullImage(final Project project, final String dockerImage) throws IOException {
+  private boolean pullImage(final Project project, final GraalvmNativeExtension extension,
+      final String dockerImage) throws IOException {
     ExecResult result = project.exec(new Action<ExecSpec>() {
       @Override
       public void execute(ExecSpec arg0) {
         arg0.setCommandLine("docker");
-        arg0.args(Arrays.asList("pull", dockerImage));
+
+        List<String> args = new ArrayList<>();
+        args.add("pull");
+        if (extension.getPlatform() != null) {
+          args.add("--platform");
+          args.add(extension.getPlatform());
+        }
+
+        args.add(dockerImage);
+        arg0.args(args);
       }
     });
     project.getLogger().debug(result.toString());
@@ -138,7 +149,7 @@ public class DockerUtils {
       final List<File> classPaths) throws IOException {
 
     String dockerImage = extension.getDockerImage();
-    pullImage(project, dockerImage);
+    pullImage(project, extension, dockerImage);
 
     ByteArrayOutputStream so = new ByteArrayOutputStream();
 
@@ -150,6 +161,11 @@ public class DockerUtils {
         arg0.setStandardOutput(so);
 
         List<String> args = new ArrayList<>(Arrays.asList("run", "-d"));
+
+        if (extension.getPlatform() != null) {
+          args.add("--platform");
+          args.add(extension.getPlatform());
+        }
 
         classPaths.forEach(cp -> args.addAll(Arrays.asList("-v", cp + ":" + cp)));
 

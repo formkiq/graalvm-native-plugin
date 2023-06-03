@@ -126,11 +126,8 @@ public class GraalvmNativeTask extends DefaultTask {
       case "i386":
         arch = "386";
         break;
-      case "x86_64":
-      case "amd64":
-        arch = "amd64";
-        break;
       default:
+        arch = "amd64";
         break;
     }
 
