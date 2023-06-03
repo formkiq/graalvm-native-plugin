@@ -12,6 +12,7 @@
  */
 package com.formkiq.gradle.internal;
 
+import static com.formkiq.gradle.internal.Strings.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -167,11 +168,12 @@ public class DockerUtils {
           args.add(extension.getPlatform());
         }
 
-        classPaths.forEach(cp -> args.addAll(Arrays.asList("-v", cp + ":" + cp)));
+        classPaths.forEach(
+            cp -> args.addAll(Arrays.asList("-v", formatToUnix(cp) + ":" + formatToUnix(cp))));
 
         if (extension.getReflectionConfig() != null) {
           args.addAll(Arrays.asList("-v",
-              extension.getReflectionConfig() + ":" + extension.getReflectionConfig()));
+              formatToUnix(extension.getReflectionConfig()) + ":" + formatToUnix(extension.getReflectionConfig())));
         }
 
         try {

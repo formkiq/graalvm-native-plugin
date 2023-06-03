@@ -12,6 +12,7 @@
  */
 package com.formkiq.gradle.internal;
 
+import static com.formkiq.gradle.internal.Strings.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -93,7 +94,7 @@ public class NativeImageExecutor {
     files.add(Path.of(project.getBuildDir().getAbsolutePath(), GRAALVM_JAVA_MAIN).toFile());
     addClasspaths(files);
 
-    return files.stream().map(File::getAbsolutePath)
+    return files.stream().map(File::getAbsolutePath).map(s -> formatToUnix(s))
         .collect(Collectors.joining(OperatingSystem.current().isWindows() ? ";" : ":"));
   }
 
