@@ -32,8 +32,8 @@ public class Strings {
     String s = path;
     if (OperatingSystem.current().isWindows()) {
       s = s.replace("\\", "/").replace(":", "");
-      if (!path.startsWith("/")) {
-        s = "/" + path;
+      if (!s.startsWith("/")) {
+        s = "/" + s;
       }
     }
 
