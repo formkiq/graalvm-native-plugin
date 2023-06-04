@@ -12,6 +12,7 @@
  */
 package com.formkiq.gradle.internal;
 
+import static com.formkiq.gradle.internal.Strings.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +55,7 @@ public class DockerUtils {
 
     if (workingDir != null) {
       a.add("--workdir");
-      a.add(workingDir);
+      a.add(formatToUnix(workingDir));
     }
 
     a.add(this.containerId);
@@ -108,17 +109,28 @@ public class DockerUtils {
    * Pull Docker Image.
    * 
    * @param project {@link Project}
+   * @param extension {@link GraalvmNativeExtension}
    * @param imageVersion {@link String}
    * @param javaVersion {@link String}
    * @return boolean
    * @throws IOException IOException
    */
-  private boolean pullImage(final Project project, final String dockerImage) throws IOException {
+  private boolean pullImage(final Project project, final GraalvmNativeExtension extension,
+      final String dockerImage) throws IOException {
     ExecResult result = project.exec(new Action<ExecSpec>() {
       @Override
       public void execute(ExecSpec arg0) {
         arg0.setCommandLine("docker");
-        arg0.args(Arrays.asList("pull", dockerImage));
+
+        List<String> args = new ArrayList<>();
+        args.add("pull");
+        if (extension.getPlatform() != null) {
+          args.add("--platform");
+          args.add(extension.getPlatform());
+        }
+
+        args.add(dockerImage);
+        arg0.args(args);
       }
     });
     project.getLogger().debug(result.toString());
@@ -138,7 +150,7 @@ public class DockerUtils {
       final List<File> classPaths) throws IOException {
 
     String dockerImage = extension.getDockerImage();
-    pullImage(project, dockerImage);
+    pullImage(project, extension, dockerImage);
 
     ByteArrayOutputStream so = new ByteArrayOutputStream();
 
@@ -151,11 +163,17 @@ public class DockerUtils {
 
         List<String> args = new ArrayList<>(Arrays.asList("run", "-d"));
 
-        classPaths.forEach(cp -> args.addAll(Arrays.asList("-v", cp + ":" + cp)));
+        if (extension.getPlatform() != null) {
+          args.add("--platform");
+          args.add(extension.getPlatform());
+        }
+
+        classPaths.forEach(
+            cp -> args.addAll(Arrays.asList("-v", formatToUnix(cp) + ":" + formatToUnix(cp))));
 
         if (extension.getReflectionConfig() != null) {
-          args.addAll(Arrays.asList("-v",
-              extension.getReflectionConfig() + ":" + extension.getReflectionConfig()));
+          args.addAll(Arrays.asList("-v", formatToUnix(extension.getReflectionConfig()) + ":"
+              + formatToUnix(extension.getReflectionConfig())));
         }
 
         try {

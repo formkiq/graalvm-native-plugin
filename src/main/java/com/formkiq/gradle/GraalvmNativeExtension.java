@@ -82,6 +82,8 @@ public class GraalvmNativeExtension {
   private Property<String> mainClassName;
   /** Output File Name. */
   private Property<String> outputFileName;
+  /** Docker Platform. */
+  private Property<String> platform;
   /** Reflection Config File. */
   private Property<String> reflectionConfig;
   /** Resource Configuration Files. */
@@ -102,6 +104,7 @@ public class GraalvmNativeExtension {
   public GraalvmNativeExtension(final ObjectFactory objects) {
     this.javaVersion = objects.property(String.class);
     this.imageVersion = objects.property(String.class);
+    this.platform = objects.property(String.class);
     this.mainClassName = objects.property(String.class);
     this.reflectionConfig = objects.property(String.class);
     this.serializationConfig = objects.property(String.class);
@@ -233,6 +236,15 @@ public class GraalvmNativeExtension {
    */
   public String getOutputFileName() {
     return this.outputFileName.getOrNull();
+  }
+
+  /**
+   * Returns the version of GraalVM Community Edition to download.
+   *
+   * @return The version of GraalVM Community Edition to download.
+   */
+  public String getPlatform() {
+    return this.platform.getOrNull();
   }
 
   /**
@@ -684,6 +696,15 @@ public class GraalvmNativeExtension {
    */
   public void setOutputFileName(final String name) {
     this.outputFileName.set(name);
+  }
+
+  /**
+   * Set Platform.
+   * 
+   * @param targetPlatform {@link String}
+   */
+  public void setPlatform(final String targetPlatform) {
+    this.platform.set(targetPlatform);
   }
 
   /**
