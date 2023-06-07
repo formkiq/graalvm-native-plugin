@@ -94,7 +94,8 @@ public class NativeImageExecutor {
     files.add(Path.of(project.getBuildDir().getAbsolutePath(), GRAALVM_JAVA_MAIN).toFile());
     addClasspaths(files);
 
-    return files.stream().map(File::getAbsolutePath).map(s -> formatToUnix(s))
+    return files.stream().map(File::getAbsolutePath)
+        .map(s -> this.extension.getDockerImage() != null ? formatToUnix(s) : s)
         .collect(Collectors.joining(OperatingSystem.current().isWindows() ? ";" : ":"));
   }
 
