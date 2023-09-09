@@ -41,8 +41,7 @@ public class GraalvmNativePlugin implements Plugin<Project> {
 
     project.afterEvaluate(task -> {
       Task graalvmNativeImage = project.getTasks().getByName("graalvmNativeImage");
-      graalvmNativeImage.dependsOn(project.getTasks().getByName("check"),
-          project.getTasks().getByName("assemble"));
+      graalvmNativeImage.dependsOn(project.getTasks().getByName("jar"));
     });
   }
 }
