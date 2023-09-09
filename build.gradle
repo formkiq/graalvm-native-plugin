@@ -1,7 +1,7 @@
 
 plugins {
     id 'java-gradle-plugin'
-    id "com.gradle.plugin-publish" version "0.12.0"
+    id "com.gradle.plugin-publish" version "1.2.1"
     id 'maven-publish'
     id 'signing'
     id 'eclipse'
@@ -10,16 +10,16 @@ plugins {
 }
 
 group   'com.formkiq.gradle'
-version '1.5.1'
+version '1.6.0'
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    languageVersion.set(JavaLanguageVersion.of(17))
   }
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -54,12 +54,15 @@ spotless {
 	
 gradlePlugin {
     // Define the plugin
+    website.set("https://github.com/formkiq/graalvm-native-plugin")
+    vcsUrl.set("https://github.com/formkiq/graalvm-native-plugin.git")
     plugins {
         nativeImage {
             id = 'com.formkiq.gradle.graalvm-native-plugin'
             displayName = 'GraalVM native Gradle plugin'
             description = 'Support for building Java applications as GraalVM native images'
             implementationClass = 'com.formkiq.gradle.GraalvmNativePlugin'
+            tags.set([ 'graal', 'graalvm', 'native', 'image', 'java', 'lambda', 'aws', ])
         }
     }
 }
@@ -93,12 +96,6 @@ publishing {
         pluginMaven(MavenPublication) {
         }
     }
-}
-
-pluginBundle {
-    website = 'https://github.com/formkiq/graalvm-native-plugin'
-    vcsUrl  = 'https://github.com/formkiq/graalvm-native-plugin.git'
-    tags    = [ 'graal', 'graalvm', 'native', 'image', 'java', 'lambda', 'aws', ]
 }
 
 check {
