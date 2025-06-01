@@ -2,9 +2,11 @@
  * Copyright [2020] FormKiQ Inc. Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may obtain a copy of the License
  * at
- * 
+ *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -34,24 +36,18 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.gradle.api.resources.ResourceException;
 
-/**
- * 
- * File Archive Utilities.
- *
- */
+/** File Archive Utilities. */
 public class ArchiveUtils {
 
   /** Buffer Size. */
   private static final int BUFFER_SIZE = 1024;
 
-  /**
-   * constructor.
-   */
+  /** constructor. */
   public ArchiveUtils() {}
 
   /**
    * Decompress .tar.gz or .zip files.
-   * 
+   *
    * @param archive {@link File}
    * @param outputDir {@link File}
    * @return boolean
@@ -65,7 +61,7 @@ public class ArchiveUtils {
 
   /**
    * Decompress .zip files.
-   * 
+   *
    * @param archive {@link File}
    * @param outputDir {@link File}
    * @return boolean
@@ -73,20 +69,15 @@ public class ArchiveUtils {
    */
   public boolean decompressZip(@Nonnull final File archive, @Nonnull final File outputDir)
       throws IOException {
-    try {
-      try (ArchiveInputStream in =
-          new ZipArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
-        return decompress(in, archive, outputDir);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
+    try (ZipArchiveInputStream in =
+        new ZipArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
+      return decompress(in, outputDir);
     }
   }
 
   /**
    * Decompress .tar.gz files.
-   * 
+   *
    * @param archive {@link File}
    * @param outputDir {@link File}
    * @return boolean
@@ -94,35 +85,29 @@ public class ArchiveUtils {
    */
   public boolean decompressTarGZip(@Nonnull final File archive, @Nonnull final File outputDir)
       throws IOException {
-    try {
-      try (ArchiveInputStream in = new TarArchiveInputStream(new GzipCompressorInputStream(
-          new BufferedInputStream(new FileInputStream(archive)), true))) {
-        return decompress(in, archive, outputDir);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
+    try (TarArchiveInputStream in = new TarArchiveInputStream(new GzipCompressorInputStream(
+        new BufferedInputStream(new FileInputStream(archive)), true))) {
+      return decompress(in, outputDir);
     }
   }
 
   /**
    * Decompress .jar files.
-   * 
+   *
    * @param archive {@link File}
    * @param outputDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean decompressJar(@Nonnull final File archive, @Nonnull final File outputDir)
+  public void decompressJar(@Nonnull final File archive, @Nonnull final File outputDir)
       throws IOException {
-    try (ArchiveInputStream in =
+    try (JarArchiveInputStream in =
         new JarArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
-      return decompress(in, archive, outputDir);
+      decompress(in, outputDir);
     }
   }
 
-  private boolean decompress(@Nonnull final ArchiveInputStream in, @Nonnull final File archive,
-      @Nonnull final File outputDir) throws IOException {
+  private boolean decompress(@Nonnull final ArchiveInputStream<?> in, @Nonnull final File outputDir)
+      throws IOException {
 
     Path directory = Path.of(outputDir.getCanonicalPath());
 
@@ -195,15 +180,13 @@ public class ArchiveUtils {
     return FileSystems.getDefault();
   }
 
-  private Path createParentDirectories(final Path path) throws IOException {
+  private void createParentDirectories(final Path path) throws IOException {
 
     Path parent = path.getParent();
 
     if (parent != null) {
       createDirectories(parent);
     }
-
-    return parent;
   }
 
   private void createDirectories(final Path directory) throws IOException {

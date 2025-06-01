@@ -2,9 +2,11 @@
  * Copyright [2020] FormKiQ Inc. Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may obtain a copy of the License
  * at
- * 
+ *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -13,6 +15,8 @@
 package com.formkiq.gradle.internal;
 
 import static com.formkiq.gradle.internal.Strings.*;
+
+import com.formkiq.gradle.GraalvmNativeExtension;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -26,13 +30,8 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.process.ExecResult;
 import org.gradle.process.ExecSpec;
-import com.formkiq.gradle.GraalvmNativeExtension;
 
-/**
- * 
- * Docker Utilities.
- *
- */
+/** Docker Utilities. */
 public class DockerUtils {
 
   /** Docker Container Id. */
@@ -40,7 +39,7 @@ public class DockerUtils {
 
   /**
    * Exec Docker.
-   * 
+   *
    * @param project {@link Project}
    * @param workingDir {@link String}
    * @param args {@link List}
@@ -78,9 +77,8 @@ public class DockerUtils {
 
   /**
    * Is Docker Installed in the system.
-   * 
+   *
    * @param project {@link Project}
-   * 
    * @throws IOException IOException
    */
   public void isDockerInstalled(final Project project) throws IOException {
@@ -107,11 +105,10 @@ public class DockerUtils {
 
   /**
    * Pull Docker Image.
-   * 
+   *
    * @param project {@link Project}
    * @param extension {@link GraalvmNativeExtension}
-   * @param imageVersion {@link String}
-   * @param javaVersion {@link String}
+   * @param dockerImage {@link String}
    * @return boolean
    * @throws IOException IOException
    */
@@ -139,7 +136,7 @@ public class DockerUtils {
 
   /**
    * Start Docker Image.
-   * 
+   *
    * @param project {@link Project}
    * @param extension {@link GraalvmNativeExtension}
    * @param classPaths {@link List} {@link File}
@@ -197,7 +194,7 @@ public class DockerUtils {
        * If Docker starts with directories that do not exist under linux the directories will be
        * created as root and the plugin will have permission issues. So we create the directories as
        * the running user before.
-       * 
+       *
        * @param files {@link List} {@link File}
        * @throws IOException IOException
        */
@@ -221,9 +218,8 @@ public class DockerUtils {
 
   /**
    * Stop Docker Image.
-   * 
+   *
    * @param project {@link Project}
-   * 
    * @throws IOException IOException
    */
   public void stopImage(final Project project) throws IOException {
@@ -252,7 +248,7 @@ public class DockerUtils {
 
   /**
    * Copy {@link File} from Docker Container to Output Directory.
-   * 
+   *
    * @param project {@link Project}
    * @param file {@link File}
    * @param outputDir {@link File}

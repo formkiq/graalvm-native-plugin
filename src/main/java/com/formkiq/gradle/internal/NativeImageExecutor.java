@@ -2,9 +2,11 @@
  * Copyright [2020] FormKiQ Inc. Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may obtain a copy of the License
  * at
- * 
+ *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -12,7 +14,10 @@
  */
 package com.formkiq.gradle.internal;
 
-import static com.formkiq.gradle.internal.Strings.*;
+import com.formkiq.gradle.GraalvmClasspathArguments;
+import com.formkiq.gradle.GraalvmNativeExtension;
+import com.formkiq.gradle.GraalvmParameterToStrings;
+import com.formkiq.gradle.services.RuntimeDependenciesDecompress;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,31 +26,25 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.tools.ant.helper.DefaultExecutor;
-import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.internal.os.OperatingSystem;
-import org.gradle.process.ExecSpec;
-import com.formkiq.gradle.GraalvmNativeExtension;
 
-/**
- * 
- * GraalVM Native-Image {@link DefaultExecutor}.
- *
- */
+/** GraalVM Native-Image {@link DefaultExecutor}. */
 public class NativeImageExecutor {
 
-  private static final String GRAALVM_JAVA_MAIN = "graalvm/java/main";
+  /** Graalvm Java Main. */
+  public static final String GRAALVM_JAVA_MAIN = "graalvm/java/main";
 
   /** {@link DockerUtils}. */
-  private DockerUtils docker;
+  private final DockerUtils docker;
+
   /** {@link GraalvmNativeExtension}. */
-  private GraalvmNativeExtension extension;
+  private final GraalvmNativeExtension extension;
 
   /**
    * constructor.
-   * 
+   *
    * @param ext {@link GraalvmNativeExtension}
    */
   public NativeImageExecutor(final GraalvmNativeExtension ext) {
@@ -53,16 +52,9 @@ public class NativeImageExecutor {
     this.docker = new DockerUtils();
   }
 
-  private void addBooleanArgument(final List<String> args, final Boolean bool,
-      final String argument) {
-    if (Boolean.TRUE.equals(bool)) {
-      args.add(argument);
-    }
-  }
-
   /**
    * Add Classpaths.
-   * 
+   *
    * @param volumeMounts {@link List} {@link File}
    */
   private void addClasspaths(final List<File> volumeMounts) {
@@ -74,34 +66,9 @@ public class NativeImageExecutor {
     }
   }
 
-  private void addStringArgument(List<String> args, String s, String argument) {
-    if (s != null) {
-      args.add(argument);
-    }
-  }
-
-  private void addStringListArgument(final List<String> args, final List<String> list,
-      final String argument) {
-    if (!list.isEmpty()) {
-      args.add(argument + "=" + String.join(",", list));
-    }
-  }
-
-  private String buildClassPathString(final Project project) {
-
-    List<File> files = new ArrayList<>();
-
-    files.add(Path.of(project.getBuildDir().getAbsolutePath(), GRAALVM_JAVA_MAIN).toFile());
-    addClasspaths(files);
-
-    return files.stream().map(File::getAbsolutePath)
-        .map(s -> this.extension.getDockerImage() != null ? formatToUnix(s) : s)
-        .collect(Collectors.joining(OperatingSystem.current().isWindows() ? ";" : ":"));
-  }
-
   /**
    * Build Graalvm Image.
-   * 
+   *
    * @param project {@link Project}
    * @param graalvmBaseDir {@link File}
    * @param outputDir {@link File}
@@ -110,7 +77,7 @@ public class NativeImageExecutor {
   public void buildGraalvmImage(final Project project, final File graalvmBaseDir, File outputDir)
       throws IOException {
 
-    List<String> args = getBuildGraalvmImageArguments(project, outputDir);
+    List<String> args = getBuildGraalvmImageArguments(project);
 
     if (this.extension.getDockerImage() != null) {
 
@@ -122,124 +89,57 @@ public class NativeImageExecutor {
 
     } else {
 
-      project.exec(new Action<ExecSpec>() {
-        @Override
-        public void execute(ExecSpec arg0) {
-
-          String executeable =
-              OperatingSystem.current().isWindows() ? "native-image.cmd" : "native-image";
-          arg0.setCommandLine(
-              Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + executeable)
-                  .toFile());
-          arg0.args(args);
-          arg0.setWorkingDir(outputDir);
-        }
+      project.exec(arg0 -> {
+        String executeable =
+            OperatingSystem.current().isWindows() ? "native-image.cmd" : "native-image";
+        arg0.setCommandLine(
+            Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + executeable)
+                .toFile());
+        arg0.args(args);
+        arg0.setWorkingDir(outputDir);
       });
     }
   }
 
   /**
    * Build Graalvm classes folder.
-   * 
+   *
    * @param project {@link Project}
    * @throws IOException IOException
    */
   public void buildGraalvmJavaMain(final Project project) throws IOException {
 
-    ArchiveUtils archiveUtils = new ArchiveUtils();
-
-    Path outputPath = Path.of(project.getBuildDir().getCanonicalPath(), GRAALVM_JAVA_MAIN);
-    File outputdir = outputPath.toFile();
-
-    List<File> classPathFiles = GradleUtils.getRuntimeClasspath(project);
-
-    for (File file : classPathFiles) {
-      archiveUtils.decompressJar(file, outputdir);
-    }
-
-    List<File> files = Files.list(Path.of(project.getBuildDir().getAbsolutePath(), "libs"))
-        .map(f -> f.toFile()).collect(Collectors.toList());
-
-    for (File file : files) {
-      archiveUtils.decompressJar(file, outputdir);
-    }
+    new RuntimeDependenciesDecompress().apply(project);
+    // ArchiveUtils archiveUtils = new ArchiveUtils();
+    //
+    // Path outputPath = Path.of(project.getBuildDir().getCanonicalPath(), GRAALVM_JAVA_MAIN);
+    // File outputdir = outputPath.toFile();
+    //
+    // List<File> classPathFiles = GradleUtils.getRuntimeClasspath(project);
+    //
+    // for (File file : classPathFiles) {
+    // archiveUtils.decompressJar(file, outputdir);
+    // }
+    //
+    // List<File> files = Files.list(Path.of(project.getBuildDir().getAbsolutePath(), "libs"))
+    // .map(Path::toFile).toList();
+    //
+    // for (File file : files) {
+    // archiveUtils.decompressJar(file, outputdir);
+    // }
   }
 
-  private List<String> getBuildGraalvmImageArguments(final Project project, final File outputDir) {
+  private List<String> getBuildGraalvmImageArguments(final Project project) {
 
     List<String> args = new ArrayList<>();
     args.add("--report-unsupported-elements-at-runtime");
     args.add("--no-server");
 
-    addBooleanArgument(args, this.extension.isEnableFallback(), "--no-fallback");
-    addBooleanArgument(args, this.extension.isAllowIncompleteClasspath(),
-        "--allow-incomplete-classpath");
-    addBooleanArgument(args, this.extension.isEnableInstallExitHandlers(),
-        "--install-exit-handlers");
-    addBooleanArgument(args, this.extension.isEnableHttp(), "--enable-http");
-    addBooleanArgument(args, this.extension.isEnableHttps(), "--enable-https");
-    addBooleanArgument(args, this.extension.isEnableVerbose(), "--verbose");
-    addBooleanArgument(args, this.extension.isEnableAutofallback(), "--auto-fallback");
-    addBooleanArgument(args, this.extension.isEnableForceFallback(), "--force-fallback");
-    addBooleanArgument(args, this.extension.isEnableAllSecurityServices(),
-        "--enable-all-security-services");
-    addBooleanArgument(args, this.extension.isEnableShared(), "--shared");
-    addBooleanArgument(args, this.extension.isEnableStatic(), "--static");
-
-    addBooleanArgument(args, this.extension.isEnableAddAllCharsets(), "-H:+AddAllCharsets");
-    addStringListArgument(args, this.extension.getInitializeAtBuildTime(),
-        "--initialize-at-build-time");
-    addStringListArgument(args, this.extension.getInitializeAtRunTime(),
-        "--initialize-at-run-time");
-
-    for (String property : this.extension.getSystemProperty()) {
-      addStringArgument(args, property, "-D" + property);
-    }
-
-    String reflectConfig = this.extension.getReflectionConfig();
-    if (reflectConfig != null) {
-      addStringArgument(args, reflectConfig,
-          "-H:ReflectionConfigurationFiles=" + formatToUnix(reflectConfig));
-    }
-
-    String serializationConfig = this.extension.getSerializationConfig();
-    if (serializationConfig != null) {
-      addStringArgument(args, serializationConfig,
-          "-H:SerializationConfigurationResources=" + serializationConfig);
-    }
-
-    String jniConfig = this.extension.getJniConfigurationFiles();
-    if (jniConfig != null) {
-      addStringArgument(args, jniConfig, "-H:JNIConfigurationFiles=" + jniConfig);
-    }
-
-    String resourceConfig = this.extension.getResourceConfigurationFiles();
-    if (resourceConfig != null) {
-      addStringArgument(args, resourceConfig, "-H:ResourceConfigurationFiles=" + resourceConfig);
-    }
-
-    addStringArgument(args, this.extension.getFeatures(),
-        "--features=" + this.extension.getFeatures());
-
-    addBooleanArgument(args, this.extension.isEnableInstallExitHandlers(),
-        "--install-exit-handlers");
-
-    addStringArgument(args, this.extension.getTraceClassInitialization(),
-        "--trace-class-initialization=" + this.extension.getTraceClassInitialization());
-    addBooleanArgument(args, this.extension.isEnableRemoveSaturatedTypeFlows(),
-        "-H:+RemoveSaturatedTypeFlows");
-    addBooleanArgument(args, this.extension.isEnableReportExceptionStackTraces(),
-        "-H:+ReportExceptionStackTraces");
-    addBooleanArgument(args, this.extension.isEnablePrintAnalysisCallTree(),
-        "-H:+PrintAnalysisCallTree");
-    addBooleanArgument(args, this.extension.isEnableCheckToolchain(), "-H:-CheckToolchain");
-    addBooleanArgument(args, this.extension.isEnableReportUnsupportedElementsAtRuntime(),
-        "-H:+ReportUnsupportedElementsAtRuntime");
+    args.addAll(new GraalvmParameterToStrings().apply(this.extension));
 
     args.add("-H:Name=" + getExecutableName(project));
 
-    args.add("-cp");
-    args.add(buildClassPathString(project));
+    args.addAll(new GraalvmClasspathArguments(project).apply(this.extension));
 
     args.add(this.extension.getMainClassName());
 
@@ -259,13 +159,12 @@ public class NativeImageExecutor {
 
   /**
    * Run 'gu' insallation.
-   * 
+   *
    * @param project {@link Project}
    * @param graalvmBaseDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean runGuInstallation(final Project project, final File graalvmBaseDir)
+  public void runGuInstallation(final Project project, final File graalvmBaseDir)
       throws IOException {
 
     if (this.extension.getDockerImage() != null) {
@@ -274,19 +173,17 @@ public class NativeImageExecutor {
 
     } else {
 
-      project.exec(new Action<ExecSpec>() {
-        @Override
-        public void execute(ExecSpec arg0) {
+      String guExecutable = OperatingSystem.current().isWindows() ? "gu.cmd" : "gu";
+      Path gu =
+          Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + guExecutable);
 
-          String gu = OperatingSystem.current().isWindows() ? "gu.cmd" : "gu";
-          arg0.setCommandLine(Paths
-              .get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + gu).toFile());
+      if (gu.toFile().exists()) {
+        project.exec(arg0 -> {
+          arg0.setCommandLine(gu.toFile());
           arg0.args(Arrays.asList("install", "native-image"));
-        }
-      });
+        });
+      }
     }
-
-    return true;
   }
 
   /**
@@ -307,12 +204,11 @@ public class NativeImageExecutor {
 
   /**
    * Start Native-Image Executor.
-   * 
+   *
    * @param project {@link Project}
-   * @param outputDir {@link File}
    * @throws IOException IOException
    */
-  public void start(final Project project, File outputDir) throws IOException {
+  public void start(final Project project) throws IOException {
 
     if (this.extension.getDockerImage() != null) {
       List<File> volumeMounts = new ArrayList<>();
@@ -321,18 +217,6 @@ public class NativeImageExecutor {
       addClasspaths(volumeMounts);
 
       this.docker.startImage(project, this.extension, volumeMounts);
-    }
-  }
-
-  /**
-   * Stop Native-Image Executor.
-   * 
-   * @param project {@link Project}
-   * @throws IOException IOException
-   */
-  public void stop(final Project project) throws IOException {
-    if (this.extension.getDockerImage() != null) {
-      this.docker.stopImage(project);
     }
   }
 }

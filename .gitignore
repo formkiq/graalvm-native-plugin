@@ -26,3 +26,9 @@ hs_err_pid*
 /bin/
 !gradle-wrapper.jar
 /.idea/
+
+!./gradle/wrapper/gradle-wrapper.jar
+!./samples/helloworld/gradle/wrapper/gradle-wrapper.jar
+!./samples/aws-lambda/HelloWorldFunction/gradle/wrapper/gradle-wrapper.jar
+
+.DS_Store

@@ -2,9 +2,11 @@
  * Copyright [2020] FormKiQ Inc. Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may obtain a copy of the License
  * at
- * 
+ *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -22,82 +24,116 @@ import org.gradle.api.provider.Property;
 public class GraalvmNativeExtension {
 
   /** Graalvm Default Version. */
-  private static final String DEFAULT_IMAGE_VERSION = "22.3.3";
+  private static final String DEFAULT_IMAGE_VERSION = "24.0.1";
+
   /** Java Default Version. */
-  private static final String DEFAULT_JAVA_VERSION = "java17";
+  private static final String DEFAULT_JAVA_VERSION = "java24";
 
   /** Additional Classpaths comma separated. */
   private Property<String> addClasspath;
+
   /** Enable using Graalvm Docker Image. */
   private Property<String> dockerImage;
+
   /** Enable Add All Charsets. */
   private Property<Boolean> enableAddAllCharsets;
+
   /** Allow image building with an incomplete class path. */
   private Property<Boolean> enableAllowIncompleteClasspath;
+
   /** Add all security service classes to the generated image. */
   private Property<Boolean> enableAllSecurityServices;
+
   /** Build stand-alone image if possible. */
   private Property<Boolean> enableAutoFallback;
+
   /** Check if native-toolchain is known to work with native-image. */
   private Property<Boolean> enableCheckToolchain;
+
   /** Force building of fallback image. */
   private Property<Boolean> enableForceFallback;
+
   /** Enable http support in the generated image. */
   private Property<Boolean> enableHttp;
+
   /** Enable https support in the generated image. */
   private Property<Boolean> enableHttps;
+
   /** Provide java.lang.Terminator exit handlers for executable images. */
   private Property<Boolean> enableInstallExitHandlers;
+
   /** Build stand-alone image or report failure. */
   private Property<Boolean> enableNoFallback;
+
   /** Print analysis call tree. */
   private Property<Boolean> enablePrintAnalysisCallTree;
+
   /** Enable the type flow saturation analysis performance optimization. */
   private Property<Boolean> enableRemoveSaturatedTypeFlows;
+
   /** Show exception stack traces for exceptions during image building. */
   private Property<Boolean> enableReportExceptionStackTraces;
+
   /** Report usage of unsupported methods and fields at run time. */
   private Property<Boolean> enableReportUnsupportedElementsAtRuntime;
+
   /** Build shared library. */
   private Property<Boolean> enableShared;
+
   /** Build statically linked executable. */
   private Property<Boolean> enableStatic;
+
   /** Enable verbose output. */
   private Property<Boolean> enableVerbose;
+
   /** a comma-separated list of fully qualified Feature implementation classes. */
   private Property<String> features;
+
   /** Local Image File to Use. */
   private Property<String> imageFile;
+
   /** Graalvm Version. */
   private Property<String> imageVersion;
+
   /** List of packages and classes that are initialized during image generation. */
   private ListProperty<String> initializeAtBuildTime;
+
   /** List of packages and classes that are initialized at runtime. */
   private ListProperty<String> initializeAtRunTime;
+
   /** Java Version. */
   private Property<String> javaVersion;
+
   /** JNI Config File. */
   private Property<String> jniConfigurationFiles;
+
   /** Class Name with main() method. */
   private Property<String> mainClassName;
+
   /** Output File Name. */
   private Property<String> outputFileName;
+
   /** Docker Platform. */
   private Property<String> platform;
+
   /** Reflection Config File. */
   private Property<String> reflectionConfig;
+
   /** Resource Configuration Files. */
   private Property<String> resourceConfigurationFiles;
+
   /** Reflection Config File. */
   private Property<String> serializationConfig;
+
   /** Java System Properties. */
   private ListProperty<String> systemProperty;
+
   /** Trace Class Initialization. */
   private Property<String> traceClassInitialization;
 
   /**
    * constructor.
-   * 
+   *
    * @param objects {@link ObjectFactory}
    */
   @Inject
@@ -141,7 +177,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Returns additional classpaths.
-   * 
+   *
    * @return {@link String}
    */
   public String getAddClasspath() {
@@ -150,7 +186,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Enable Docker Image Usage.
-   * 
+   *
    * @return {@link String}
    */
   public String getDockerImage() {
@@ -186,7 +222,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get Initialize-At-Build-Time.
-   * 
+   *
    * @return {@link List} {@link String}
    */
   public List<String> getInitializeAtBuildTime() {
@@ -195,7 +231,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get Initialize-At-Run-Time.
-   * 
+   *
    * @return {@link List} {@link String}
    */
   public List<String> getInitializeAtRunTime() {
@@ -213,7 +249,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get JNI Configuration Files.
-   * 
+   *
    * @return {@link String}
    */
   public String getJniConfigurationFiles() {
@@ -222,7 +258,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get Main Class Name.
-   * 
+   *
    * @return {@link String}
    */
   public String getMainClassName() {
@@ -249,7 +285,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get Reflection Config File.
-   * 
+   *
    * @return {@link String}
    */
   public String getReflectionConfig() {
@@ -258,7 +294,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get Resource Configuration Files.
-   * 
+   *
    * @return {@link String}
    */
   public String getResourceConfigurationFiles() {
@@ -267,7 +303,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get Serialization Config File.
-   * 
+   *
    * @return {@link String}
    */
   public String getSerializationConfig() {
@@ -276,7 +312,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get System Property.
-   * 
+   *
    * @return {@link List} {@link String}
    */
   public List<String> getSystemProperty() {
@@ -285,7 +321,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Get Trace Class Initialization.
-   * 
+   *
    * @return {@link String}
    */
   public String getTraceClassInitialization() {
@@ -294,7 +330,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Enable Allow Incomplete Classpath.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isAllowIncompleteClasspath() {
@@ -303,7 +339,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Enable Add All Charsets.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableAddAllCharsets() {
@@ -312,7 +348,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Enable All Security Services.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableAllSecurityServices() {
@@ -321,7 +357,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Auto Fall Back.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableAutofallback() {
@@ -330,7 +366,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Check Tool chain.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableCheckToolchain() {
@@ -339,7 +375,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Fallback.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableFallback() {
@@ -348,7 +384,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Force Fallback.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableForceFallback() {
@@ -357,7 +393,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Enable Http.
-   * 
+   *
    * @return Boolean
    */
   public Boolean isEnableHttp() {
@@ -366,7 +402,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Enable Https.
-   * 
+   *
    * @return Boolean
    */
   public Boolean isEnableHttps() {
@@ -375,7 +411,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Install-Exit-Handlers.
-   * 
+   *
    * @return Boolean
    */
   public Boolean isEnableInstallExitHandlers() {
@@ -384,7 +420,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Print Analysis Call Tree.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnablePrintAnalysisCallTree() {
@@ -393,7 +429,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Remove Saturated Type Flows.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableRemoveSaturatedTypeFlows() {
@@ -402,7 +438,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Report Exception Stack Traces.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableReportExceptionStackTraces() {
@@ -411,7 +447,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Report Unsupported Elements At Runtime.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableReportUnsupportedElementsAtRuntime() {
@@ -420,7 +456,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Enable Shared.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableShared() {
@@ -429,7 +465,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Enable Static.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableStatic() {
@@ -438,7 +474,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Is Verbose.
-   * 
+   *
    * @return {@link Boolean}
    */
   public Boolean isEnableVerbose() {
@@ -447,7 +483,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Additional Classpath.
-   * 
+   *
    * @param cp {@link String}
    */
   public void setAddClasspath(final String cp) {
@@ -456,7 +492,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable Docker Image usage.
-   * 
+   *
    * @param imageName {@link String}
    */
   public void setDockerImage(final String imageName) {
@@ -465,7 +501,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable AddAllCharsets.
-   * 
+   *
    * @param enabled Boolean
    */
   public void setEnableAddAllCharsets(final Boolean enabled) {
@@ -474,7 +510,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Allow Incomplete Classpath.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableAllowIncompleteClasspath(final Boolean enabled) {
@@ -483,7 +519,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable All Security Services.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableAllSecurityServices(final Boolean enabled) {
@@ -492,7 +528,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Auto Fall Back.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableAutofallback(final Boolean enabled) {
@@ -501,7 +537,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Check Tool chain.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableCheckToolchain(final Boolean enabled) {
@@ -510,7 +546,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Force Fallback.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableForceFallback(final Boolean enabled) {
@@ -519,9 +555,8 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable Http.
-   * 
+   *
    * @param enabled {@link Boolean}
-   * 
    */
   public void setEnableHttp(final Boolean enabled) {
     this.enableHttp.set(enabled);
@@ -529,7 +564,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable Https.
-   * 
+   *
    * @param enabled Boolean
    */
   public void setEnableHttps(final Boolean enabled) {
@@ -538,7 +573,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Install-Exit-Handlers
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableInstallExitHandlers(final Boolean enabled) {
@@ -547,7 +582,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable No Fallback.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableNoFallback(final Boolean enabled) {
@@ -556,7 +591,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Print Analysis Call Tree.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnablePrintAnalysisCallTree(final Boolean enabled) {
@@ -565,7 +600,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Remove Saturated Type Flows.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableRemoveSaturatedTypeFlows(final Boolean enabled) {
@@ -574,7 +609,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Report Exception Stack Traces.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableReportExceptionStackTraces(Boolean enabled) {
@@ -583,7 +618,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Report Unsupported Elements At Runtime.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableReportUnsupportedElementsAtRuntime(Boolean enabled) {
@@ -592,7 +627,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable Shared.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableShared(final Boolean enabled) {
@@ -601,7 +636,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable Static.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableStatic(Boolean enabled) {
@@ -610,7 +645,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Enable Verbose.
-   * 
+   *
    * @param enabled {@link Boolean}
    */
   public void setEnableVerbose(final Boolean enabled) {
@@ -619,7 +654,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Features.
-   * 
+   *
    * @param feature {@link String}
    */
   public void setFeatures(final String feature) {
@@ -628,7 +663,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Image File.
-   * 
+   *
    * @param filepath {@link String}
    */
   public void setImageFile(final String filepath) {
@@ -637,7 +672,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Image Version.
-   * 
+   *
    * @param version {@link String}
    */
   public void setImageVersion(final String version) {
@@ -646,7 +681,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Initialize-At-Build-Time.
-   * 
+   *
    * @param list {@link List} {@link String}
    */
   public void setInitializeAtBuildTime(final List<String> list) {
@@ -655,7 +690,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Initialize-At-Run-Time.
-   * 
+   *
    * @param list {@link List} {@link String}
    */
   public void setInitializeAtRunTime(final List<String> list) {
@@ -664,7 +699,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Java Version.
-   * 
+   *
    * @param version {@link String}
    */
   public void setJavaVersion(final String version) {
@@ -673,7 +708,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set JNI Config File.
-   * 
+   *
    * @param configFile {@link String}
    */
   public void setJniConfigurationFiles(final String configFile) {
@@ -682,7 +717,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Main Class Name.
-   * 
+   *
    * @param className {@link String}
    */
   public void setMainClassName(final String className) {
@@ -691,7 +726,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Additional Classpath.
-   * 
+   *
    * @param name {@link String}
    */
   public void setOutputFileName(final String name) {
@@ -700,7 +735,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Platform.
-   * 
+   *
    * @param targetPlatform {@link String}
    */
   public void setPlatform(final String targetPlatform) {
@@ -709,7 +744,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Reflection Config File.
-   * 
+   *
    * @param configFile {@link String}
    */
   public void setReflectionConfig(final String configFile) {
@@ -718,7 +753,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Resource Config File.
-   * 
+   *
    * @param configFile {@link String}
    */
   public void setResourceConfigurationFiles(final String configFile) {
@@ -727,7 +762,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Serialization Config File.
-   * 
+   *
    * @param configFile {@link String}
    */
   public void setSerializationConfig(final String configFile) {
@@ -736,7 +771,7 @@ public class GraalvmNativeExtension {
 
   /**
    * Set System Property.
-   * 
+   *
    * @param list {@link List} {@link String}
    */
   public void setSystemProperty(final List<String> list) {
@@ -745,11 +780,10 @@ public class GraalvmNativeExtension {
 
   /**
    * Set Trace Class Initialization.
-   * 
+   *
    * @param classInitialization {@link String}
    */
   public void setTraceClassInitialization(final String classInitialization) {
     this.traceClassInitialization.set(classInitialization);
   }
-
 }
