@@ -13,6 +13,10 @@ public class GraalvmParameterToStrings implements Function<GraalvmNativeExtensio
 
     List<String> args = new ArrayList<>();
 
+    if (extension.getBuildOptions() != null) {
+      args.add(extension.getBuildOptions());
+    }
+
     addBooleanArgument(args, extension.isEnableFallback(), "--no-fallback");
     addBooleanArgument(args, extension.isAllowIncompleteClasspath(),
         "--allow-incomplete-classpath");
@@ -58,8 +62,6 @@ public class GraalvmParameterToStrings implements Function<GraalvmNativeExtensio
     }
 
     addStringArgument(args, extension.getFeatures(), "--features=" + extension.getFeatures());
-
-    addBooleanArgument(args, extension.isEnableInstallExitHandlers(), "--install-exit-handlers");
 
     addStringArgument(args, extension.getTraceClassInitialization(),
         "--trace-class-initialization=" + extension.getTraceClassInitialization());

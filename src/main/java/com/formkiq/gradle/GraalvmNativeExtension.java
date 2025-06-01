@@ -29,6 +29,9 @@ public class GraalvmNativeExtension {
   /** Java Default Version. */
   private static final String DEFAULT_JAVA_VERSION = "java24";
 
+  /** Build Options . */
+  private Property<String> buildOptions;
+
   /** Additional Classpaths comma separated. */
   private Property<String> addClasspath;
 
@@ -171,6 +174,7 @@ public class GraalvmNativeExtension {
     this.features = objects.property(String.class);
     this.outputFileName = objects.property(String.class);
     this.dockerImage = objects.property(String.class);
+    this.buildOptions = objects.property(String.class);
     this.enableAllowIncompleteClasspath = objects.property(Boolean.class);
     this.enableNoFallback = objects.property(Boolean.class);
   }
@@ -191,6 +195,15 @@ public class GraalvmNativeExtension {
    */
   public String getDockerImage() {
     return this.dockerImage.getOrNull();
+  }
+
+  /**
+   * Get Build Options.
+   *
+   * @return {@link String}
+   */
+  public String getBuildOptions() {
+    return this.buildOptions.getOrNull();
   }
 
   /**
@@ -497,6 +510,15 @@ public class GraalvmNativeExtension {
    */
   public void setDockerImage(final String imageName) {
     this.dockerImage.set(imageName);
+  }
+
+  /**
+   * Set Build Options.
+   *
+   * @param buildOptions {@link String}
+   */
+  public void setBuildOptions(final String buildOptions) {
+    this.buildOptions.set(buildOptions);
   }
 
   /**
