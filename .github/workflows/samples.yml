@@ -44,7 +44,7 @@ jobs:
     - name: Build Plugin
       run: ./gradlew clean build --info
     - name: Run Dockerfile
-      run: cd dockerfile && ./gradlew clean build --info
+      run: cd samples/dockerfile && ./gradlew clean build --info
     - name: Run AWS Lambda Test
       run: cd samples/aws-lambda/HelloWorldFunction && ./gradlew clean build --info
     - name: Run Helloworld
