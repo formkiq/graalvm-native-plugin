@@ -41,16 +41,11 @@ jobs:
       run: |
         mkdir /home/runner/.gnupg
         echo -n "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > /home/runner/.gnupg/secring.gpg
-    - name: Execute Gradle build
+    - name: Build Plugin
       run: ./gradlew clean build --info
-    - name: Upload test reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-reports
-        path: "**/build/reports/*"
-        retention-days: 5
-    - name: Execute Gradle build
+    - name: Run Dockerfile
+      run: cd dockerfile && ./gradlew clean build --info
+    - name: Run AWS Lambda Test
       run: cd samples/aws-lambda/HelloWorldFunction && ./gradlew clean build --info
-    - name: Execute Gradle build
+    - name: Run Helloworld
       run: cd samples/helloworld && ./gradlew clean build --info
