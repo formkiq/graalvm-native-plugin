@@ -97,13 +97,14 @@ public abstract class GraalvmNativeTask extends DefaultTask {
 
     this.execOperations = execOperations;
 
-    // 1) Source files under src/main/java
-    getSourceDir().set(layout.getProjectDirectory().dir("src/main/java"));
+    if (Path.of("src/main/java").toFile().exists()) {
+      getSourceDir().set(layout.getProjectDirectory().dir("src/main/java"));
+    } else {
+      getSourceDir().set(layout.getProjectDirectory());
+    }
 
-    // 2) Wire in the Java plugin’s runtimeClasspath
     getRuntimeClasspath().from(configurations.named("runtimeClasspath"));
 
-    // 3) Pick an output folder under build/graalvm
     getOutputDir().set(layout.getBuildDirectory().dir("graalvm"));
     this.setGroup("build");
     this.setDescription("Builds a native image for Java applications using GraalVM tools");
@@ -243,7 +244,20 @@ public abstract class GraalvmNativeTask extends DefaultTask {
    */
   @InputDirectory
   public File getSourceFileDir() {
-    return projectDirectory.resolve("src").resolve("main").toFile();
+    File file = null;
+    String dockerFile = this.extension.getDockerFile();
+
+    if (dockerFile != null) {
+      Path p = Path.of(dockerFile);
+      Path parent = p.getParent();
+      file = parent != null ? parent.toFile() : projectDirectory.toFile();
+    }
+
+    if (file == null) {
+      file = projectDirectory.resolve("src").resolve("main").toFile();
+    }
+
+    return file;
   }
 
   /**

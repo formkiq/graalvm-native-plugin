@@ -16,8 +16,8 @@ package com.formkiq.gradle;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.TaskProvider;
 
 /** GraalVM Plugin to build a native-image from a Java application. */
 public class GraalvmNativePlugin implements Plugin<Project> {
@@ -25,22 +25,39 @@ public class GraalvmNativePlugin implements Plugin<Project> {
   @Override
   public void apply(final Project project) {
 
-    project.getPluginManager().apply(JavaPlugin.class);
-
     GraalvmNativeExtension ext = project.getExtensions().create("nativeImage",
         GraalvmNativeExtension.class, project.getObjects());
 
     Provider<GraalvmBuildService> svc = project.getGradle().getSharedServices().registerIfAbsent(
         "web", GraalvmBuildService.class, spec -> spec.getMaxParallelUsages().set(1));
 
-    project.getTasks().register("graalvmNativeImage", GraalvmNativeTask.class, task -> {
-      task.setGroup("Graalvm");
-      task.setDescription("Build GraalVM Native Image");
-      task.setExtension(ext);
-      task.usesService(svc);
-    });
+    TaskProvider<GraalvmNativeTask> nativeImage =
+        project.getTasks().register("graalvmNativeImage", GraalvmNativeTask.class, task -> {
+          task.setGroup("Graalvm");
+          task.setDescription("Build GraalVM Native Image");
+          task.setExtension(ext);
+          task.usesService(svc);
+        });
 
-    project.afterEvaluate(
-        p -> p.getTasks().named("graalvmNativeImage").configure(t -> t.dependsOn("check")));
+    project.afterEvaluate(p -> {
+      nativeImage.configure(task -> {
+        // always depend on `check`
+        task.dependsOn("check");
+
+        // only depend on `jar` if that task was applied
+        if (p.getTasks().findByName("jar") != null) {
+          task.dependsOn("jar");
+        }
+
+        // only depend on `distTar` if that task was applied
+        if (p.getTasks().findByName("distTar") != null) {
+          task.dependsOn("distTar");
+        }
+
+        if (p.getTasks().findByName("distZip") != null) {
+          task.dependsOn("distZip");
+        }
+      });
+    });
   }
 }

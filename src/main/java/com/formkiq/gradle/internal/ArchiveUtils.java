@@ -46,7 +46,7 @@ public class ArchiveUtils {
   /**
    * Decompress .tar.gz or .zip files.
    *
-   * @param archive   {@link File}
+   * @param archive {@link File}
    * @param outputDir {@link File}
    * @throws IOException IOException
    */
@@ -62,7 +62,7 @@ public class ArchiveUtils {
   /**
    * Decompress .zip files.
    *
-   * @param archive   {@link File}
+   * @param archive {@link File}
    * @param outputDir {@link File}
    * @throws IOException IOException
    */
@@ -77,7 +77,7 @@ public class ArchiveUtils {
   /**
    * Decompress .tar.gz files.
    *
-   * @param archive   {@link File}
+   * @param archive {@link File}
    * @param outputDir {@link File}
    * @throws IOException IOException
    */
@@ -170,7 +170,6 @@ public class ArchiveUtils {
         }
       }
     }
-
   }
 
   private @Nonnull FileSystem createResource() {
