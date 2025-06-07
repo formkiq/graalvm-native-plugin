@@ -42,10 +42,10 @@ jobs:
         mkdir /home/runner/.gnupg
         echo -n "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode > /home/runner/.gnupg/secring.gpg
     - name: Build Plugin
-      run: ./gradlew clean build --info
+      run: ./gradlew clean build
     - name: Run Helloworld
-      run: cd samples/helloworld && ./gradlew clean build --stacktrace
+      run: cd samples/helloworld && ./gradlew clean build
     - name: Run Dockerfile
-      run: cd samples/dockerfile && ./gradlew clean build --info
+      run: cd samples/dockerfile && ./gradlew clean build
     - name: Run AWS Lambda Test
-      run: cd samples/aws-lambda/HelloWorldFunction && ./gradlew clean build --info
+      run: cd samples/aws-lambda/HelloWorldFunction && ./gradlew clean build

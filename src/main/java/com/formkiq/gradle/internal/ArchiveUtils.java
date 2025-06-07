@@ -158,10 +158,8 @@ public class ArchiveUtils {
             }
 
             int mode = tarEntry != null ? tarEntry.getMode() : -1;
-            System.out.println("PATH: " + fullpath + " MODE: " + mode);
             if (tarEntry != null && (mode & 64) != 0) {
               boolean ok = file.setExecutable(true, false);
-              System.out.println("PATH: " + fullpath + " EXEUTABLE TRUE");
               if (!ok) {
                 throw new IOException("Unable to set executable permission on " + fullpath);
               }
