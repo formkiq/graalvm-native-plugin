@@ -25,7 +25,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import javax.annotation.Nonnull;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
@@ -50,8 +49,7 @@ public class ArchiveUtils {
    * @param outputDir {@link File}
    * @throws IOException IOException
    */
-  public void decompress(@Nonnull final File archive, @Nonnull final File outputDir)
-      throws IOException {
+  public void decompress(final File archive, final File outputDir) throws IOException {
     if (archive.toString().endsWith(".zip")) {
       decompressZip(archive, outputDir);
     } else {
@@ -66,8 +64,7 @@ public class ArchiveUtils {
    * @param outputDir {@link File}
    * @throws IOException IOException
    */
-  public void decompressZip(@Nonnull final File archive, @Nonnull final File outputDir)
-      throws IOException {
+  public void decompressZip(final File archive, final File outputDir) throws IOException {
     try (ZipArchiveInputStream in =
         new ZipArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
       decompress(in, outputDir);
@@ -81,8 +78,7 @@ public class ArchiveUtils {
    * @param outputDir {@link File}
    * @throws IOException IOException
    */
-  public void decompressTarGZip(@Nonnull final File archive, @Nonnull final File outputDir)
-      throws IOException {
+  public void decompressTarGZip(final File archive, final File outputDir) throws IOException {
     try (TarArchiveInputStream in = new TarArchiveInputStream(new GzipCompressorInputStream(
         new BufferedInputStream(new FileInputStream(archive)), true))) {
       decompress(in, outputDir);
@@ -96,16 +92,14 @@ public class ArchiveUtils {
    * @param outputDir {@link File}
    * @throws IOException IOException
    */
-  public void decompressJar(@Nonnull final File archive, @Nonnull final File outputDir)
-      throws IOException {
+  public void decompressJar(final File archive, final File outputDir) throws IOException {
     try (JarArchiveInputStream in =
         new JarArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
       decompress(in, outputDir);
     }
   }
 
-  private void decompress(@Nonnull final ArchiveInputStream<?> in, @Nonnull final File outputDir)
-      throws IOException {
+  private void decompress(final ArchiveInputStream<?> in, final File outputDir) throws IOException {
 
     Path directory = Path.of(outputDir.getCanonicalPath());
 
@@ -163,8 +157,13 @@ public class ArchiveUtils {
               }
             }
 
+            int mode = tarEntry != null ? tarEntry.getMode() : -1;
+            System.out.println("PATH: " + fullpath + " MODE: " + mode);
             if (tarEntry != null && tarEntry.getMode() == 493) {
-              file.setExecutable(true);
+              boolean ok = file.setExecutable(true);
+              if (!ok) {
+                throw new IOException("Unable to set executable permission on " + fullpath);
+              }
             }
           }
         }
@@ -172,7 +171,7 @@ public class ArchiveUtils {
     }
   }
 
-  private @Nonnull FileSystem createResource() {
+  private FileSystem createResource() {
     return FileSystems.getDefault();
   }
 
