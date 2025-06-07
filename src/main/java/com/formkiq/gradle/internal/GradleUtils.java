@@ -20,10 +20,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.UnknownConfigurationException;
 
 /** Gradle Utilities. */
 public class GradleUtils {
@@ -35,21 +36,29 @@ public class GradleUtils {
    * Get Runtime Class Path Files.
    *
    * @param project {@link Project}
+   * @param buildDir {@link Path}
    * @return {@link List} {@link File}
    * @throws IOException IOException
    */
-  public static List<File> getRuntimeClasspath(final Project project) throws IOException {
+  public static List<File> getRuntimeClasspath(final Project project, final Path buildDir)
+      throws IOException {
 
     List<File> files = new ArrayList<>();
 
-    files.addAll(Files.list(Path.of(project.getBuildDir().getAbsolutePath(), "libs"))
-        .map(f -> f.toFile()).collect(Collectors.toList()));
+    Path path = buildDir.resolve("libs");
+
+    if (path.toFile().exists()) {
+      try (Stream<Path> stream = Files.list(path)) {
+        files.addAll(stream.map(Path::toFile).toList());
+      }
+    }
 
     ConfigurationContainer configurations = project.getConfigurations();
-    Configuration runtimeClasspath = configurations.getAt("runtimeClasspath");
-
-    if (runtimeClasspath != null) {
+    try {
+      Configuration runtimeClasspath = configurations.getAt("runtimeClasspath");
       files.addAll(runtimeClasspath.getFiles());
+    } catch (UnknownConfigurationException e) {
+      // ignore
     }
 
     return files;

@@ -14,25 +14,37 @@ import java.util.stream.Stream;
 import org.gradle.api.Project;
 
 /** Decompress {@link Project} Runtime Dependencies. */
-public class RuntimeDependenciesDecompress implements Function<Project, Void> {
+public class RuntimeDependenciesDecompress implements Function<Path, Void> {
 
   /** {@link ArchiveUtils}. */
-  private ArchiveUtils archiveUtils = new ArchiveUtils();
+  private final ArchiveUtils archiveUtils = new ArchiveUtils();
+
+  /** {@link Project}. */
+  private final Project project;
+
+  /**
+   * constructor.
+   *
+   * @param project {@link Project}
+   */
+  public RuntimeDependenciesDecompress(final Project project) {
+    this.project = project;
+  }
 
   @Override
-  public Void apply(final Project project) {
+  public Void apply(final Path buildDir) {
 
     try {
-      Path outputPath = Path.of(project.getBuildDir().getCanonicalPath(), GRAALVM_JAVA_MAIN);
+      Path outputPath = buildDir.resolve(GRAALVM_JAVA_MAIN);
       File outputdir = outputPath.toFile();
 
-      List<File> classPathFiles = GradleUtils.getRuntimeClasspath(project);
+      List<File> classPathFiles = GradleUtils.getRuntimeClasspath(project, buildDir);
 
       for (File file : classPathFiles) {
         archiveUtils.decompressJar(file, outputdir);
       }
 
-      Path libsDir = Path.of(project.getBuildDir().getAbsolutePath(), "libs");
+      Path libsDir = buildDir.resolve("libs");
 
       try (Stream<Path> stream = Files.list(libsDir)) {
         List<File> files = stream.map(Path::toFile).toList();

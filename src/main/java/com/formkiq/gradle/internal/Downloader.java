@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 /** Utility class for Downloading files from a URL. */
 public class Downloader {
 
-  private final Logger logger = Logger.getLogger(Downloader.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(Downloader.class.getName());
 
   /**
    * Download File.
@@ -47,7 +47,7 @@ public class Downloader {
       for (final String url : urls) {
 
         if (urlExists(url)) {
-          logger.log(Level.INFO, "Downloading " + url + " to " + toFile);
+          LOGGER.log(Level.INFO, "Downloading " + url + " to " + toFile);
           Path parent = toFile.getParent();
           if (parent != null) {
             Files.createDirectories(parent);
@@ -69,7 +69,7 @@ public class Downloader {
       }
 
     } else {
-      logger.log(Level.INFO, "Downloaded file {0} already exists", toFile);
+      LOGGER.log(Level.INFO, "Downloaded file {0} already exists", toFile);
     }
   }
 

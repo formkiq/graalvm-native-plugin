@@ -29,6 +29,9 @@ public class GraalvmNativeExtension {
   /** Java Default Version. */
   private static final String DEFAULT_JAVA_VERSION = "java24";
 
+  /** Dockerfile. */
+  private Property<String> dockerFile;
+
   /** Build Options . */
   private Property<String> buildOptions;
 
@@ -116,6 +119,9 @@ public class GraalvmNativeExtension {
   /** Output File Name. */
   private Property<String> outputFileName;
 
+  /** Output Image Tag. */
+  private Property<String> outputImageTag;
+
   /** Docker Platform. */
   private Property<String> platform;
 
@@ -173,8 +179,10 @@ public class GraalvmNativeExtension {
     this.addClasspath = objects.property(String.class);
     this.features = objects.property(String.class);
     this.outputFileName = objects.property(String.class);
+    this.outputImageTag = objects.property(String.class);
     this.dockerImage = objects.property(String.class);
     this.buildOptions = objects.property(String.class);
+    this.dockerFile = objects.property(String.class);
     this.enableAllowIncompleteClasspath = objects.property(Boolean.class);
     this.enableNoFallback = objects.property(Boolean.class);
   }
@@ -204,6 +212,15 @@ public class GraalvmNativeExtension {
    */
   public String getBuildOptions() {
     return this.buildOptions.getOrNull();
+  }
+
+  /**
+   * Get Dockerfile.
+   *
+   * @return {@link String}
+   */
+  public String getDockerFile() {
+    return this.dockerFile.getOrNull();
   }
 
   /**
@@ -285,6 +302,15 @@ public class GraalvmNativeExtension {
    */
   public String getOutputFileName() {
     return this.outputFileName.getOrNull();
+  }
+
+  /**
+   * Returns Output Image Tag.
+   *
+   * @return {@link String}
+   */
+  public String getOutputImageTag() {
+    return this.outputImageTag.getOrElse("generated-graalvm-native-plugin");
   }
 
   /**
@@ -522,6 +548,15 @@ public class GraalvmNativeExtension {
   }
 
   /**
+   * Set Dockerfile.
+   *
+   * @param dockerfile {@link String}
+   */
+  public void setDockerFile(final String dockerfile) {
+    this.dockerFile.set(dockerfile);
+  }
+
+  /**
    * Set Enable AddAllCharsets.
    *
    * @param enabled Boolean
@@ -747,12 +782,21 @@ public class GraalvmNativeExtension {
   }
 
   /**
-   * Set Additional Classpath.
+   * Set Output File name.
    *
    * @param name {@link String}
    */
   public void setOutputFileName(final String name) {
     this.outputFileName.set(name);
+  }
+
+  /**
+   * Set Output Image Tag.
+   *
+   * @param name {@link String}
+   */
+  public void setOutputImageTag(final String name) {
+    this.outputImageTag.set(name);
   }
 
   /**

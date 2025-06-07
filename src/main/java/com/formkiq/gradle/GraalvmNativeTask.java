@@ -16,36 +16,64 @@ package com.formkiq.gradle;
 
 import com.formkiq.gradle.internal.ArchiveUtils;
 import com.formkiq.gradle.internal.Downloader;
-import com.formkiq.gradle.internal.GradleUtils;
 import com.formkiq.gradle.internal.NativeImageExecutor;
 import com.formkiq.gradle.services.DefaultDockerService;
 import com.formkiq.gradle.services.DockerService;
 import com.formkiq.gradle.services.DockerfileGenerator;
 import com.formkiq.gradle.services.GraalVmUrlBuilder;
 import com.formkiq.gradle.services.Platform;
-import com.formkiq.gradle.services.RuntimeDependenciesDecompress;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.resources.ResourceException;
-import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.process.ExecOperations;
 
 /** Graalvm Build Task Plugin. */
-public class GraalvmNativeTask extends DefaultTask {
+public abstract class GraalvmNativeTask extends DefaultTask {
+
+  /**
+   * The directory containing your main source set.
+   *
+   * @return DirectoryProperty
+   */
+  @InputDirectory
+  public abstract DirectoryProperty getSourceDir();
+
+  /**
+   * Get Runtime Classpath.
+   *
+   * @return ConfigurableFileCollection
+   */
+  @Classpath
+  public abstract ConfigurableFileCollection getRuntimeClasspath();
+
+  /**
+   * Where we'll write out the native image.
+   *
+   * @return DirectoryProperty
+   */
+  @OutputDirectory
+  public abstract DirectoryProperty getOutputDir();
+
+  private final ExecOperations execOperations;
+  private final Path buildDirectory;
+  private final Path projectDirectory;
 
   /** {@link GraalvmNativeExtension}. */
   private GraalvmNativeExtension extension;
@@ -59,45 +87,48 @@ public class GraalvmNativeTask extends DefaultTask {
   /**
    * constructor.
    *
-   * @param objects {@link ObjectFactory}
+   * @param layout {@link ProjectLayout}
+   * @param configurations {@link ConfigurationContainer}
+   * @param execOperations {@link ExecOperations}
    */
   @Inject
-  public GraalvmNativeTask(final ObjectFactory objects) {
+  public GraalvmNativeTask(final ProjectLayout layout, final ConfigurationContainer configurations,
+      final ExecOperations execOperations) {
+
+    this.execOperations = execOperations;
+
+    // 1) Source files under src/main/java
+    getSourceDir().set(layout.getProjectDirectory().dir("src/main/java"));
+
+    // 2) Wire in the Java plugin’s runtimeClasspath
+    getRuntimeClasspath().from(configurations.named("runtimeClasspath"));
+
+    // 3) Pick an output folder under build/graalvm
+    getOutputDir().set(layout.getBuildDirectory().dir("graalvm"));
     this.setGroup("build");
     this.setDescription("Builds a native image for Java applications using GraalVM tools");
+    buildDirectory = layout.getBuildDirectory().get().getAsFile().toPath();
+    projectDirectory = layout.getProjectDirectory().getAsFile().toPath();
   }
 
   /** Create GraalVM Image. */
   @TaskAction
   public void createImage() {
 
-    Path buildDir = Path.of(getProject().getBuildDir().getAbsolutePath(), "graalvm");
-
     try {
-
-      Path toFile = this.extension.getImageFile() != null ? Path.of(this.extension.getImageFile())
-          : Path.of(buildDir.toFile().getAbsolutePath(), getFilename());
 
       NativeImageExecutor executor = new NativeImageExecutor(this.extension);
 
-      if (this.extension.getDockerImage() != null) {
+      if (this.extension.getDockerFile() != null) {
+        executeDockerFile();
+      } else if (this.extension.getDockerImage() != null) {
 
-        DockerService service = new DefaultDockerService();
-        if (!service.isDockerRunning()) {
-          throw new ResourceException("Docker is not running");
-        }
-
-        new RuntimeDependenciesDecompress().apply(getProject());
-
-        DockerfileGenerator gen = DockerfileGenerator.builder()
-            .baseImage(this.extension.getDockerImage()).addNativeImageArgs(this.extension)
-            .mainClass(this.extension.getMainClassName()).build();
-
-        String dockerfileContent = gen.generateContents();
-        getLogger().info(MessageFormat.format("Generating Dockerfile {0}", dockerfileContent));
-        service.buildDockerfile(dockerfileContent);
+        executeDockerImage(executor);
 
       } else {
+
+        Path buildDirGraalvm = buildDirectory.resolve("graalvm");
+        Path toFile = buildDirGraalvm.resolve(getFilename());
 
         if (this.extension.getImageFile() == null) {
           List<String> urls =
@@ -107,70 +138,64 @@ public class GraalvmNativeTask extends DefaultTask {
           downloader.download(urls, toFile);
         }
 
-        archiveUtils.decompress(toFile.toFile(), buildDir.toFile());
+        archiveUtils.decompress(toFile.toFile(), buildDirGraalvm.toFile());
 
-        Optional<String> folder = getFirstSubdirectory(buildDir);
+        String folder = getFirstSubdirectory(buildDirGraalvm);
+        Path graalvmBaseDir = buildDirGraalvm.resolve(folder);
 
-        Path graalvmBaseDir = Path.of(buildDir.toFile().getAbsolutePath(), folder.get());
-
-        File generatedFileDir = getOutputDirectory();
-        Path path = Path.of(generatedFileDir.getAbsolutePath(), "java");
+        Path path = buildDirectory.resolve("graalvm/java/main");
         if (path.toFile().exists()) {
           deleteDirectory(path);
         }
 
-        executor.start(getProject());
-
-        executor.runGuInstallation(getProject(), graalvmBaseDir.toFile());
-        executor.runNativeImage(getProject(), graalvmBaseDir.toFile(), generatedFileDir);
+        executor.runGuInstallation(this.execOperations, graalvmBaseDir);
+        executor.runNativeImage(this.execOperations, getProject(), buildDirectory,
+            graalvmBaseDir.toFile(), path.toFile());
       }
 
-      // if (this.extension.getDockerImage() == null && this.extension.getImageFile() == null)
-      // {
-      //
-      // List<String> urls = GraalVmUrlBuilder.builder()
-      // .withJavaVersion(this.extension.getJavaVersion())
-      //
-      // .withVersion(this.extension.getImageVersion()).withPlatform(Platform.detect()).build();
-      // new Downloader().download(urls, toFile);
-      // }
-
-      // NativeImageExecutor executor = new NativeImageExecutor(this.extension);
-      //
-      // boolean decompressed = this.extension.getDockerImage() != null
-      // || new ArchiveUtils().decompress(toFile.toFile(), buildDir.toFile());
-      //
-      // if (this.extension.getDockerImage() != null) {
-      // DockerUtils docker = new DockerUtils();
-      // docker.isDockerInstalled(getProject());
-      // }
-      //
-      // if (decompressed) {
-      //
-      // try {
-      //
-      // File generatedFileDir = getOutputDirectory();
-      // Path path = Path.of(generatedFileDir.getAbsolutePath(), "java");
-      // if (path.toFile().exists()) {
-      // deleteDirectory(path);
-      // }
-      //
-      // executor.start(getProject(), generatedFileDir);
-      //
-      // Path graalvmBaseDir = Path.of(buildDir.toFile().getAbsolutePath(),
-      // getFilenameShort());
-      // executor.runGuInstallation(getProject(), graalvmBaseDir.toFile());
-      // executor.runNativeImage(getProject(), graalvmBaseDir.toFile(), generatedFileDir);
-      //
-      // } finally {
-      // executor.stop(getProject());
-      // }
-      // }
-
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException | InterruptedException e) {
       throw new ResourceException(e.getMessage(), e);
     }
+  }
+
+  private void executeDockerFile() throws IOException, InterruptedException {
+
+    DockerService service = new DefaultDockerService();
+    if (!service.isDockerRunning()) {
+      throw new ResourceException("Docker is not running");
+    }
+
+    String dockerfileContent = Files.readString(Path.of(this.extension.getDockerFile()));
+    getLogger().info("Generating Dockerfile {}", dockerfileContent);
+
+    service.removeDockerImage(this.extension.getOutputImageTag());
+
+    Path buildDir = buildDirectory;
+    service.buildDockerImage(buildDir, this.extension.getOutputImageTag(), dockerfileContent);
+    service.runDockerImage(buildDir, this.extension.getOutputImageTag());
+  }
+
+  private void executeDockerImage(NativeImageExecutor executor)
+      throws IOException, InterruptedException {
+    DockerService service = new DefaultDockerService();
+    if (!service.isDockerRunning()) {
+      throw new ResourceException("Docker is not running");
+    }
+
+    executor.buildGraalvmJavaMain(getProject(), buildDirectory);
+
+    DockerfileGenerator gen = DockerfileGenerator.builder()
+        .baseImage(this.extension.getDockerImage()).addNativeImageArgs(this.extension)
+        .mainClass(this.extension.getMainClassName()).build();
+
+    String dockerfileContent = gen.generateContents();
+    getLogger().info("Generating Dockerfile {}", dockerfileContent);
+
+    service.removeDockerImage(this.extension.getOutputImageTag());
+
+    Path buildDir = buildDirectory;
+    service.buildDockerImage(buildDir, this.extension.getOutputImageTag(), dockerfileContent);
+    service.runDockerImage(buildDir, this.extension.getOutputImageTag());
   }
 
   /**
@@ -179,7 +204,7 @@ public class GraalvmNativeTask extends DefaultTask {
    * @throws IllegalArgumentException if dirPath does not exist or is not a directory
    * @throws IOException if an I/O error occurs while reading the directory
    */
-  private Optional<String> getFirstSubdirectory(final Path directory) throws IOException {
+  private String getFirstSubdirectory(final Path directory) throws IOException {
 
     // 1) Make sure the path exists and is a directory
     if (!Files.exists(directory) || !Files.isDirectory(directory)) {
@@ -187,39 +212,19 @@ public class GraalvmNativeTask extends DefaultTask {
     }
 
     // 2) List entries, filter only directories, sort by name, and pick the first
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-      Optional<Path> firstDir = Files.list(directory).filter(Files::isDirectory).sorted() // sort by
-          // Path’s
-          // natural
-          // order
-          // (alphabetical)
-          .findFirst();
-
-      return firstDir.map(Path::getFileName).map(Path::toString);
+    // sort by Path’s natural order (alphabetical)
+    Optional<Path> firstDir;
+    try (Stream<Path> stream = Files.list(directory)) {
+      firstDir = stream.filter(Files::isDirectory).sorted().findFirst();
     }
+
+    return firstDir.map(Path::getFileName).map(Path::toString).orElseThrow();
   }
 
   private void deleteDirectory(Path pathToBeDeleted) throws IOException {
-    Files.walk(pathToBeDeleted).sorted(Comparator.reverseOrder()).map(Path::toFile)
-        .forEach(File::delete);
-  }
-
-  private String getArchitecture() {
-
-    String osArch = System.getProperty("os.arch").toLowerCase();
-    String arch = osArch.startsWith("arm") ? "aarch64" : null;
-
-    switch (osArch) {
-      case "x86":
-      case "i386":
-        arch = "386";
-        break;
-      default:
-        arch = "amd64";
-        break;
+    try (Stream<Path> walker = Files.walk(pathToBeDeleted)) {
+      walker.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
     }
-
-    return arch;
   }
 
   private String getExtension() {
@@ -228,47 +233,7 @@ public class GraalvmNativeTask extends DefaultTask {
   }
 
   private String getFilename() {
-    return MessageFormat.format("graalvm-ce-{0}-{1}-{2}-{3}.{4}", getJavaVersion(), getPlatform(),
-        getArchitecture(), this.extension.getImageVersion(), getExtension());
-  }
-
-  private String getFilenameShort() {
-    return MessageFormat.format("graalvm-ce-{0}-{1}", getJavaVersion(),
-        this.extension.getImageVersion());
-  }
-
-  private String getJavaVersion() {
-    return this.extension.getJavaVersion();
-  }
-
-  /**
-   * Output File Directory.
-   *
-   * @return {@link File}
-   */
-  @OutputDirectory
-  public File getOutputDirectory() {
-    return FileSystems.getDefault().getPath(getProject().getBuildDir().getAbsolutePath(), "graalvm")
-        .toFile();
-  }
-
-  private String getPlatform() {
-    String os = System.getProperty("os.name").toLowerCase();
-    String platform = os.startsWith("windows") ? "windows" : null;
-    platform = os.startsWith("mac") ? "darwin" : platform;
-    platform = platform != null ? platform : "linux";
-    return platform;
-  }
-
-  /**
-   * Get Runtime Classpath.
-   *
-   * @return {@link Collection} {@link File}
-   * @throws IOException IOException
-   */
-  @Input
-  public Collection<File> getRuntimeClasspath() throws IOException {
-    return GradleUtils.getRuntimeClasspath(getProject());
+    return MessageFormat.format("graalvm-ce.{0}", getExtension());
   }
 
   /**
@@ -278,8 +243,7 @@ public class GraalvmNativeTask extends DefaultTask {
    */
   @InputDirectory
   public File getSourceFileDir() {
-    return FileSystems.getDefault()
-        .getPath(getProject().getProjectDir().getAbsolutePath(), "src/main/java").toFile();
+    return projectDirectory.resolve("src").resolve("main").toFile();
   }
 
   /**

@@ -29,15 +29,13 @@ import java.util.List;
 import org.apache.tools.ant.helper.DefaultExecutor;
 import org.gradle.api.Project;
 import org.gradle.internal.os.OperatingSystem;
+import org.gradle.process.ExecOperations;
 
 /** GraalVM Native-Image {@link DefaultExecutor}. */
 public class NativeImageExecutor {
 
   /** Graalvm Java Main. */
   public static final String GRAALVM_JAVA_MAIN = "graalvm/java/main";
-
-  /** {@link DockerUtils}. */
-  private final DockerUtils docker;
 
   /** {@link GraalvmNativeExtension}. */
   private final GraalvmNativeExtension extension;
@@ -49,87 +47,44 @@ public class NativeImageExecutor {
    */
   public NativeImageExecutor(final GraalvmNativeExtension ext) {
     this.extension = ext;
-    this.docker = new DockerUtils();
-  }
-
-  /**
-   * Add Classpaths.
-   *
-   * @param volumeMounts {@link List} {@link File}
-   */
-  private void addClasspaths(final List<File> volumeMounts) {
-    if (this.extension.getAddClasspath() != null) {
-      String[] cp = this.extension.getAddClasspath().split(",");
-      for (String c : cp) {
-        volumeMounts.add(new File(c));
-      }
-    }
   }
 
   /**
    * Build Graalvm Image.
    *
+   * @param execOperations {@link ExecOperations}
    * @param project {@link Project}
+   * @param buildDir {@link Path}
    * @param graalvmBaseDir {@link File}
    * @param outputDir {@link File}
-   * @throws IOException IOException
    */
-  public void buildGraalvmImage(final Project project, final File graalvmBaseDir, File outputDir)
-      throws IOException {
+  public void buildGraalvmImage(final ExecOperations execOperations, final Project project,
+      final Path buildDir, final File graalvmBaseDir, File outputDir) {
 
-    List<String> args = getBuildGraalvmImageArguments(project);
+    List<String> args = getBuildGraalvmImageArguments(project, buildDir);
 
-    if (this.extension.getDockerImage() != null) {
-
-      List<String> a = new ArrayList<>();
-      a.add("native-image");
-      a.addAll(args);
-
-      this.docker.exec(project, outputDir.toString(), a);
-
-    } else {
-
-      project.exec(arg0 -> {
-        String executeable =
-            OperatingSystem.current().isWindows() ? "native-image.cmd" : "native-image";
-        arg0.setCommandLine(
-            Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + executeable)
-                .toFile());
-        arg0.args(args);
-        arg0.setWorkingDir(outputDir);
-      });
-    }
+    execOperations.exec(arg0 -> {
+      String executeable =
+          OperatingSystem.current().isWindows() ? "native-image.cmd" : "native-image";
+      arg0.setCommandLine(
+          Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + executeable)
+              .toFile());
+      arg0.args(args);
+      arg0.setWorkingDir(outputDir);
+    });
   }
 
   /**
    * Build Graalvm classes folder.
    *
    * @param project {@link Project}
-   * @throws IOException IOException
+   * @param buildDir {@link Path}
    */
-  public void buildGraalvmJavaMain(final Project project) throws IOException {
-
-    new RuntimeDependenciesDecompress().apply(project);
-    // ArchiveUtils archiveUtils = new ArchiveUtils();
-    //
-    // Path outputPath = Path.of(project.getBuildDir().getCanonicalPath(), GRAALVM_JAVA_MAIN);
-    // File outputdir = outputPath.toFile();
-    //
-    // List<File> classPathFiles = GradleUtils.getRuntimeClasspath(project);
-    //
-    // for (File file : classPathFiles) {
-    // archiveUtils.decompressJar(file, outputdir);
-    // }
-    //
-    // List<File> files = Files.list(Path.of(project.getBuildDir().getAbsolutePath(), "libs"))
-    // .map(Path::toFile).toList();
-    //
-    // for (File file : files) {
-    // archiveUtils.decompressJar(file, outputdir);
-    // }
+  public void buildGraalvmJavaMain(final Project project, final Path buildDir) {
+    new RuntimeDependenciesDecompress(project).apply(buildDir);
   }
 
-  private List<String> getBuildGraalvmImageArguments(final Project project) {
+  private List<String> getBuildGraalvmImageArguments(final Project project, final Path buildDir) {
 
     List<String> args = new ArrayList<>();
     args.add("--report-unsupported-elements-at-runtime");
@@ -139,7 +94,7 @@ public class NativeImageExecutor {
 
     args.add("-H:Name=" + getExecutableName(project));
 
-    args.addAll(new GraalvmClasspathArguments(project).apply(this.extension));
+    args.addAll(new GraalvmClasspathArguments(buildDir).apply(this.extension));
 
     args.add(this.extension.getMainClassName());
 
@@ -160,63 +115,39 @@ public class NativeImageExecutor {
   /**
    * Run 'gu' insallation.
    *
-   * @param project {@link Project}
+   * @param execOperations {@link ExecOperations}
    * @param graalvmBaseDir {@link File}
    * @throws IOException IOException
    */
-  public void runGuInstallation(final Project project, final File graalvmBaseDir)
+  public void runGuInstallation(final ExecOperations execOperations, final Path graalvmBaseDir)
       throws IOException {
 
-    if (this.extension.getDockerImage() != null) {
+    String guExecutable = OperatingSystem.current().isWindows() ? "gu.cmd" : "gu";
+    Path gu = graalvmBaseDir.resolve(guExecutable);
 
-      this.docker.exec(project, null, Arrays.asList("gu", "install", "native-image"));
-
-    } else {
-
-      String guExecutable = OperatingSystem.current().isWindows() ? "gu.cmd" : "gu";
-      Path gu =
-          Paths.get(getGraalBin(graalvmBaseDir).toAbsolutePath().toString(), "/" + guExecutable);
-
-      if (gu.toFile().exists()) {
-        project.exec(arg0 -> {
-          arg0.setCommandLine(gu.toFile());
-          arg0.args(Arrays.asList("install", "native-image"));
-        });
-      }
+    if (gu.toFile().exists()) {
+      execOperations.exec(arg0 -> {
+        arg0.setCommandLine(gu.toFile());
+        arg0.args(Arrays.asList("install", "native-image"));
+      });
     }
   }
 
   /**
    * Run Native Image Command.
    *
+   * @param execOperations {@link ExecOperations}
    * @param project {@link Project}
+   * @param buildDir {@link Path}
    * @param graalvmBaseDir {@link Files}
    * @param outputDir {@link File}
    * @throws IOException IOException
    */
-  public void runNativeImage(final Project project, final File graalvmBaseDir, File outputDir)
-      throws IOException {
+  public void runNativeImage(final ExecOperations execOperations, final Project project,
+      final Path buildDir, final File graalvmBaseDir, File outputDir) throws IOException {
 
-    buildGraalvmJavaMain(project);
+    buildGraalvmJavaMain(project, buildDir);
 
-    buildGraalvmImage(project, graalvmBaseDir, outputDir);
-  }
-
-  /**
-   * Start Native-Image Executor.
-   *
-   * @param project {@link Project}
-   * @throws IOException IOException
-   */
-  public void start(final Project project) throws IOException {
-
-    if (this.extension.getDockerImage() != null) {
-      List<File> volumeMounts = new ArrayList<>();
-      volumeMounts.add(Path.of(project.getBuildDir().getAbsolutePath()).toFile());
-
-      addClasspaths(volumeMounts);
-
-      this.docker.startImage(project, this.extension, volumeMounts);
-    }
+    buildGraalvmImage(execOperations, project, buildDir, graalvmBaseDir, outputDir);
   }
 }

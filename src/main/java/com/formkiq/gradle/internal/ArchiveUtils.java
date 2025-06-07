@@ -25,7 +25,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 import javax.annotation.Nonnull;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -34,7 +33,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.gradle.api.resources.ResourceException;
 
 /** File Archive Utilities. */
 public class ArchiveUtils {
@@ -48,46 +46,46 @@ public class ArchiveUtils {
   /**
    * Decompress .tar.gz or .zip files.
    *
-   * @param archive {@link File}
+   * @param archive   {@link File}
    * @param outputDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean decompress(@Nonnull final File archive, @Nonnull final File outputDir)
+  public void decompress(@Nonnull final File archive, @Nonnull final File outputDir)
       throws IOException {
-    return archive.toString().endsWith(".zip") ? decompressZip(archive, outputDir)
-        : decompressTarGZip(archive, outputDir);
+    if (archive.toString().endsWith(".zip")) {
+      decompressZip(archive, outputDir);
+    } else {
+      decompressTarGZip(archive, outputDir);
+    }
   }
 
   /**
    * Decompress .zip files.
    *
-   * @param archive {@link File}
+   * @param archive   {@link File}
    * @param outputDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean decompressZip(@Nonnull final File archive, @Nonnull final File outputDir)
+  public void decompressZip(@Nonnull final File archive, @Nonnull final File outputDir)
       throws IOException {
     try (ZipArchiveInputStream in =
         new ZipArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
-      return decompress(in, outputDir);
+      decompress(in, outputDir);
     }
   }
 
   /**
    * Decompress .tar.gz files.
    *
-   * @param archive {@link File}
+   * @param archive   {@link File}
    * @param outputDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean decompressTarGZip(@Nonnull final File archive, @Nonnull final File outputDir)
+  public void decompressTarGZip(@Nonnull final File archive, @Nonnull final File outputDir)
       throws IOException {
     try (TarArchiveInputStream in = new TarArchiveInputStream(new GzipCompressorInputStream(
         new BufferedInputStream(new FileInputStream(archive)), true))) {
-      return decompress(in, outputDir);
+      decompress(in, outputDir);
     }
   }
 
@@ -106,13 +104,13 @@ public class ArchiveUtils {
     }
   }
 
-  private boolean decompress(@Nonnull final ArchiveInputStream<?> in, @Nonnull final File outputDir)
+  private void decompress(@Nonnull final ArchiveInputStream<?> in, @Nonnull final File outputDir)
       throws IOException {
 
     Path directory = Path.of(outputDir.getCanonicalPath());
 
     if (!outputDir.exists()) {
-      createDirectories(directory);
+      Files.createDirectories(directory);
     }
 
     ArchiveEntry entry;
@@ -173,7 +171,6 @@ public class ArchiveUtils {
       }
     }
 
-    return true;
   }
 
   private @Nonnull FileSystem createResource() {
@@ -185,19 +182,7 @@ public class ArchiveUtils {
     Path parent = path.getParent();
 
     if (parent != null) {
-      createDirectories(parent);
-    }
-  }
-
-  private void createDirectories(final Path directory) throws IOException {
-    if (!directory.toFile().exists()) {
-      Files.createDirectories(directory);
-    }
-
-    if (!directory.toFile().exists()) {
-      throw new ResourceException(MessageFormat.format(
-          "Unable to create directory '{0}', during extraction of archive contents.\n",
-          directory.toFile().getAbsolutePath()));
+      Files.createDirectories(parent);
     }
   }
 }

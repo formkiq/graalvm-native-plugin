@@ -16,7 +16,7 @@ package com.formkiq.gradle;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Provider;
 
 /** GraalVM Plugin to build a native-image from a Java application. */
@@ -24,23 +24,23 @@ public class GraalvmNativePlugin implements Plugin<Project> {
 
   @Override
   public void apply(final Project project) {
-    GraalvmNativeExtension extension = project.getExtensions().create("nativeImage",
+
+    project.getPluginManager().apply(JavaPlugin.class);
+
+    GraalvmNativeExtension ext = project.getExtensions().create("nativeImage",
         GraalvmNativeExtension.class, project.getObjects());
 
-    Provider<GraalvmBuildService> serviceProvider =
-        project.getGradle().getSharedServices().registerIfAbsent("web", GraalvmBuildService.class,
-            spec -> spec.getMaxParallelUsages().set(1));
+    Provider<GraalvmBuildService> svc = project.getGradle().getSharedServices().registerIfAbsent(
+        "web", GraalvmBuildService.class, spec -> spec.getMaxParallelUsages().set(1));
 
-    project.getTasks().create("graalvmNativeImage", GraalvmNativeTask.class, task -> {
+    project.getTasks().register("graalvmNativeImage", GraalvmNativeTask.class, task -> {
       task.setGroup("Graalvm");
-      task.setDescription("Build GraalVm Native Image");
-      task.setExtension(extension);
-      task.usesService(serviceProvider);
+      task.setDescription("Build GraalVM Native Image");
+      task.setExtension(ext);
+      task.usesService(svc);
     });
 
-    project.afterEvaluate(task -> {
-      Task graalvmNativeImage = project.getTasks().getByName("graalvmNativeImage");
-      graalvmNativeImage.dependsOn(project.getTasks().getByName("jar"));
-    });
+    project.afterEvaluate(
+        p -> p.getTasks().named("graalvmNativeImage").configure(t -> t.dependsOn("check")));
   }
 }
