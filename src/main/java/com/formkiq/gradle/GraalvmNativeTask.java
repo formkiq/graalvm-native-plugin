@@ -178,6 +178,7 @@ public abstract class GraalvmNativeTask extends DefaultTask {
 
   private void executeDockerImage(NativeImageExecutor executor)
       throws IOException, InterruptedException {
+
     DockerService service = new DefaultDockerService();
     if (!service.isDockerRunning()) {
       throw new ResourceException("Docker is not running");
@@ -185,11 +186,15 @@ public abstract class GraalvmNativeTask extends DefaultTask {
 
     executor.buildGraalvmJavaMain(getProject(), buildDirectory);
 
-    DockerfileGenerator gen = DockerfileGenerator.builder()
-        .baseImage(this.extension.getDockerImage()).addNativeImageArgs(this.extension)
-        .mainClass(this.extension.getMainClassName()).build();
+    DockerfileGenerator.Builder builder =
+        DockerfileGenerator.builder().baseImage(this.extension.getDockerImage())
+            .addNativeImageArgs(this.extension).mainClass(this.extension.getMainClassName());
 
-    String dockerfileContent = gen.generateContents();
+    if (this.extension.getOutputFileName() != null) {
+      builder.addNativeImageArg("-H:Name=" + this.extension.getOutputFileName());
+    }
+
+    String dockerfileContent = builder.build().generateContents(buildDirectory);
     getLogger().info("Generating Dockerfile {}", dockerfileContent);
 
     service.removeDockerImage(this.extension.getOutputImageTag());

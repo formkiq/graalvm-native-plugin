@@ -4,9 +4,6 @@ import static com.formkiq.gradle.internal.NativeImageExecutor.GRAALVM_JAVA_MAIN;
 
 import com.formkiq.gradle.GraalvmNativeExtension;
 import com.formkiq.gradle.GraalvmParameterToStrings;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +23,10 @@ public class DockerfileGenerator {
   /**
    * Generates the Dockerfile contents as a String.
    *
+   * @param buildDir {@link Path}
    * @return Dockerfile content
    */
-  public String generateContents() {
+  public String generateContents(final Path buildDir) {
     StringBuilder sb = new StringBuilder();
     sb.append("FROM ").append(baseImage).append("\n\n")
         .append("# Ensure GraalVM native-image component is installed\n").append("RUN sh -c \"")
@@ -37,7 +35,7 @@ public class DockerfileGenerator {
 
     sb.append("\nWORKDIR /workspace").append("\n");
 
-    if (Path.of("build", GRAALVM_JAVA_MAIN).toFile().exists()) {
+    if (buildDir.resolve(GRAALVM_JAVA_MAIN).toFile().exists()) {
       sb.append("\nCOPY . .").append("\n");
     }
 
@@ -55,19 +53,9 @@ public class DockerfileGenerator {
       sb.append("\n");
     }
 
-    System.out.println("-----------------------");
-    System.out.println("Generated contents: " + sb.toString());
-    return sb.toString();
-  }
+    sb.append("\nCMD [\"sh\", \"-c\", \"cp /workspace/* /output\"]").append("\n");
 
-  /**
-   * Writes the generated Dockerfile to the specified path.
-   *
-   * @param outputPath where to write the Dockerfile
-   * @throws IOException if an I/O error occurs
-   */
-  public void writeTo(Path outputPath) throws IOException {
-    Files.writeString(outputPath, generateContents(), StandardCharsets.UTF_8);
+    return sb.toString();
   }
 
   /**

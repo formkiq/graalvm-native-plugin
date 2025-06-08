@@ -33,13 +33,14 @@ class DockerServiceTests {
         .addNativeImageArgs(nativeArgs).mainClass(null).build();
 
     // when
-    Path outputPath = service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME, gen.generateContents());
+    Path outputPath =
+        service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME, gen.generateContents(BUILD_DIR));
 
     // then
     assertTrue(Files.exists(outputPath), "Dockerfile should be created");
 
     String expected = DockerfileGenerator.builder().baseImage(DOCKER_IMAGE_24).mainClass(null)
-        .addNativeImageArgs(nativeArgs).build().generateContents();
+        .addNativeImageArgs(nativeArgs).build().generateContents(BUILD_DIR);
     String actual = Files.readString(outputPath, StandardCharsets.UTF_8);
     assertEquals(expected, actual, "Generated Dockerfile should match expected contents");
   }
@@ -85,13 +86,14 @@ class DockerServiceTests {
         .addNativeImageArgs(nativeArgs).mainClass(null).build();
 
     // when
-    Path outputPath = service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME, gen.generateContents());
+    Path outputPath =
+        service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME, gen.generateContents(BUILD_DIR));
 
     // then
     assertTrue(Files.exists(outputPath), "Dockerfile should be created");
 
-    String expected =
-        DockerfileGenerator.builder().baseImage(DOCKER_IMAGE_24).build().generateContents();
+    String expected = DockerfileGenerator.builder().baseImage(DOCKER_IMAGE_24).build()
+        .generateContents(BUILD_DIR);
     String actual = Files.readString(outputPath, StandardCharsets.UTF_8);
     assertEquals(expected, actual, "Generated Dockerfile should match expected contents");
   }

@@ -1,7 +1,6 @@
 package com.formkiq.gradle.services;
 
 import static com.formkiq.gradle.internal.NativeImageExecutor.GRAALVM_JAVA_MAIN;
-import static org.gradle.internal.impldep.org.testng.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -13,14 +12,16 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 /** Tests for DockerfileGenerator. */
 public class DockerfileGeneratorTest {
 
+  /** Build Dir. */
+  private final Path buildDir = Path.of("build");
+
   @BeforeEach
   public void setup() throws IOException {
-    Files.createDirectories(Path.of("build", GRAALVM_JAVA_MAIN));
+    Files.createDirectories(buildDir.resolve(GRAALVM_JAVA_MAIN));
   }
 
   @Test
@@ -29,7 +30,7 @@ public class DockerfileGeneratorTest {
     DockerfileGenerator gen = DockerfileGenerator.builder().baseImage("test/image:latest").build();
 
     // when
-    String content = gen.generateContents();
+    String content = gen.generateContents(buildDir);
 
     // then
     assertDockerfileEquals("dockerfile/Dockerfile1", content);
@@ -45,28 +46,10 @@ public class DockerfileGeneratorTest {
             .addNativeImageArg("--no-fallback").addNativeImageArg("-H:Name=myapp").build();
 
     // when
-    String content = gen.generateContents();
+    String content = gen.generateContents(buildDir);
 
     // then
     assertDockerfileEquals("dockerfile/Dockerfile2", content);
-  }
-
-  @Test
-  void testWriteToFile(@TempDir Path tempDir) throws IOException {
-    // given
-    DockerfileGenerator gen = DockerfileGenerator.builder().baseImage("ubuntu:20.04")
-        .mainClass("com.test.App").addNativeImageArg("--static").build();
-
-    // when
-    Path dockerfilePath = tempDir.resolve("Dockerfile");
-    gen.writeTo(dockerfilePath);
-
-    // then
-    assertTrue(Files.exists(dockerfilePath), "Dockerfile should be written to the specified path");
-
-    String fileContent = Files.readString(dockerfilePath);
-    assertEquals(gen.generateContents(), fileContent,
-        "Written file content should match generated contents");
   }
 
   private void assertDockerfileEquals(final String dockerFile, final String content)

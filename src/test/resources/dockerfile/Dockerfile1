@@ -6,3 +6,5 @@ RUN sh -c "if ! command -v native-image >/dev/null 2>&1; then gu install native-
 WORKDIR /workspace
 
 COPY . .
+
+CMD ["sh", "-c", "cp /workspace/* /output"]

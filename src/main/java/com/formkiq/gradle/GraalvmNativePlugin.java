@@ -39,25 +39,14 @@ public class GraalvmNativePlugin implements Plugin<Project> {
           task.usesService(svc);
         });
 
-    project.afterEvaluate(p -> {
-      nativeImage.configure(task -> {
-        // always depend on `check`
-        task.dependsOn("check");
+    project.afterEvaluate(p -> nativeImage.configure(task -> {
+      // always depend on `check`
+      task.dependsOn("check");
 
-        // only depend on `jar` if that task was applied
-        if (p.getTasks().findByName("jar") != null) {
-          task.dependsOn("jar");
-        }
-
-        // only depend on `distTar` if that task was applied
-        if (p.getTasks().findByName("distTar") != null) {
-          task.dependsOn("distTar");
-        }
-
-        if (p.getTasks().findByName("distZip") != null) {
-          task.dependsOn("distZip");
-        }
-      });
-    });
+      // only depend on `jar` if that task was applied
+      if (p.getTasks().findByName("jar") != null) {
+        task.dependsOn("jar");
+      }
+    }));
   }
 }
