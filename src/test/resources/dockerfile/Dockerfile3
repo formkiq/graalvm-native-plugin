@@ -4,4 +4,4 @@ FROM bash
 RUN echo "This file was generated inside Docker at build time." > /tmp/generated.txt
 
 # Step 2: at container start, copy that file into the mounted host folder (/output)
-CMD ["sh", "-c", "cp /tmp/generated.txt /output/generated.txt"]
+ENTRYPOINT ["sh", "-c", "cp /tmp/generated.txt /output/generated.txt"]

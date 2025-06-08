@@ -7,4 +7,4 @@ WORKDIR /workspace
 
 COPY . .
 
-CMD ["sh", "-c", "cp /workspace/* /output"]
+ENTRYPOINT ["sh", "-c", "cp /workspace/* /output"]

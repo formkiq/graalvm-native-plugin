@@ -53,7 +53,7 @@ public class DockerfileGenerator {
       sb.append("\n");
     }
 
-    sb.append("\nCMD [\"sh\", \"-c\", \"cp /workspace/* /output\"]").append("\n");
+    sb.append("\nENTRYPOINT [\"sh\", \"-c\", \"cp /workspace/* /output\"]").append("\n");
 
     return sb.toString();
   }

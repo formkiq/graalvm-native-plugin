@@ -10,4 +10,4 @@ COPY . .
 # Build native-image with parameters
 RUN native-image --no-fallback -H:Name=myapp com.example.Main
 
-CMD ["sh", "-c", "cp /workspace/* /output"]
+ENTRYPOINT ["sh", "-c", "cp /workspace/* /output"]
