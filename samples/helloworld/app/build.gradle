@@ -38,4 +38,6 @@ nativeImage {
     enableReportExceptionStackTraces = true
 }
 
-build.dependsOn graalvmNativeImage
+tasks.distTar.enabled = false
+distZip.dependsOn graalvmNativeImage
+startScripts.dependsOn graalvmNativeImage
