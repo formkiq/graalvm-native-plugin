@@ -1,19 +1,11 @@
-buildscript {
-	repositories {
-		mavenLocal()
-		jcenter()
-	}
 
-	dependencies {
-		classpath 'com.formkiq.gradle:graalvm-native-plugin:1.1.0'
-    }
- }
-
-apply plugin: 'java-library'
-apply plugin: 'com.formkiq.gradle.graalvm-native-plugin'
+plugins {
+    id 'java-library'
+    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.7.0-SNAPSHOT'
+}
 
 repositories {
-		mavenLocal()
+	mavenLocal()
     mavenCentral()
 }
 
@@ -36,7 +28,7 @@ nativeImage {
     enableHttp = true
     enableHttps = true
     enableStatic = true
-    reflectionConfig = "$buildDir/classes/java/main/META-INF/graal/reflect.json"
+    reflectionConfig = "META-INF/graal/reflect.json"
 }
 
 build.dependsOn graalvmNativeImage

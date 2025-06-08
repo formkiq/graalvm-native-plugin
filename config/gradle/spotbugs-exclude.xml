@@ -46,6 +46,13 @@ For a detailed description of spotbugs bug categories, see https://spotbugs.read
         <OR>
             <Class name="com.formkiq.gradle.GraalvmNativeTask"/>
         </OR>
-    </Match>   
-    
+    </Match>
+
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+        <OR>
+            <Class name="com.formkiq.gradle.GraalvmNativeTask"/>
+        </OR>
+    </Match>
+
 </FindBugsFilter>

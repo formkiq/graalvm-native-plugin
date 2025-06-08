@@ -12,7 +12,7 @@ Supports for building Java applications as GraalVM native images.
 Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block):
 ```groovy
 plugins {
-    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.4.0'
+    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.7.0'
 }
 ```
 
@@ -25,7 +25,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.formkiq.gradle:graalvm-native-plugin:1.4.0"
+    classpath "com.formkiq.gradle:graalvm-native-plugin:1.7.0"
   }
 }
 
@@ -36,7 +36,7 @@ apply plugin: "com.formkiq.gradle.graalvm-native-plugin"
 Using the [plugins DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block):
 ```kotlin
 plugins {
-    id("com.formkiq.gradle.graalvm-native-plugin") version "1.4.0"
+    id("com.formkiq.gradle.graalvm-native-plugin") version "1.7.0"
 }
 ```
 
@@ -49,7 +49,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath("com.formkiq.gradle:graalvm-native-plugin:1.4.0")
+    classpath("com.formkiq.gradle:graalvm-native-plugin:1.7.0")
   }
 }
 
@@ -79,8 +79,8 @@ More configuration options can be found [here](https://github.com/formkiq/graalv
 ## Configuration
 | Property | Type | Description |
 |----------|------|-------------|
-| `imageVersion` | `String` | The GraalVM Community Edition version to download. Default to `20.2.0`. |
-| `javaVersion` | `String` | The JDK version to be downloaded with GraalVM Community Edition. Default to `11`. |
+| `imageVersion` | `String` | The GraalVM Community Edition version to download. Default to `24.0.1`. |
+| `javaVersion` | `String` | The JDK version to be downloaded with GraalVM Community Edition. Default to `24`. |
 | `dockerImage` | `String` | Graalvm Docker Image build using. |
 | `imageFile` | `String` | A local Image File to instead of downloading a file based on imageVersion/javaVersion/architecture. |
 | `mainClassName` (Required) | `String` | The fully qualified name of the Java class that contains a `main` method for the entry point of the Native Image executable. |
@@ -109,6 +109,9 @@ More configuration options can be found [here](https://github.com/formkiq/graalv
 | `addClasspath` | `String` | Additional Classpaths comma separated. |
 | `features` | `String` | a comma-separated list of fully qualified Feature implementation classes. |
 | `outputFileName` | `String` | Output File Name. |
+| `dockerFile` | `String` | The location of the dockerFile to build (see Samples for example). |
+| `outputImageTag` | `String` | Output Image Tag to be used with dockerFile (see Samples for example) |
+| `buildOptions` | `String` | Graalvm general build options that are passed directly to the native-image |
 
 ## Using with Windows
 

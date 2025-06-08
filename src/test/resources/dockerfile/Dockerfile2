@@ -1,0 +1,13 @@
+FROM graalvm:21.3.0
+
+# Ensure GraalVM native-image component is installed
+RUN sh -c "if ! command -v native-image >/dev/null 2>&1; then gu install native-image; fi"
+
+WORKDIR /workspace
+
+COPY . .
+
+# Build native-image with parameters
+RUN native-image --no-fallback -H:Name=myapp com.example.Main
+
+ENTRYPOINT ["sh", "-c", "cp /workspace/* /output"]

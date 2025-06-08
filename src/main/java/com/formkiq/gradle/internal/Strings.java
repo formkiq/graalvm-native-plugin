@@ -3,16 +3,12 @@ package com.formkiq.gradle.internal;
 import java.io.File;
 import org.gradle.internal.os.OperatingSystem;
 
-/**
- * 
- * {@link String} utilities.
- *
- */
+/** {@link String} utilities. */
 public class Strings {
 
   /**
    * Format {@link File} in Unix format.
-   * 
+   *
    * @param file {@link File}
    * @return {@link String}
    */
@@ -24,7 +20,7 @@ public class Strings {
 
   /**
    * Format {@link String} in Unix format.
-   * 
+   *
    * @param path {@link String}
    * @return {@link String}
    */

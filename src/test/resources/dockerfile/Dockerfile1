@@ -1,0 +1,10 @@
+FROM test/image:latest
+
+# Ensure GraalVM native-image component is installed
+RUN sh -c "if ! command -v native-image >/dev/null 2>&1; then gu install native-image; fi"
+
+WORKDIR /workspace
+
+COPY . .
+
+ENTRYPOINT ["sh", "-c", "cp /workspace/* /output"]

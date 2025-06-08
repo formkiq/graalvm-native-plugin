@@ -2,9 +2,11 @@
  * Copyright [2020] FormKiQ Inc. Licensed under the Apache License, Version 2.0 (the "License"); you
  * may not use this file except in compliance with the License. You may obtain a copy of the License
  * at
- * 
+ *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -23,8 +25,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.MessageFormat;
-import javax.annotation.Nonnull;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
@@ -32,102 +32,79 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.gradle.api.resources.ResourceException;
 
-/**
- * 
- * File Archive Utilities.
- *
- */
+/** File Archive Utilities. */
 public class ArchiveUtils {
 
   /** Buffer Size. */
   private static final int BUFFER_SIZE = 1024;
 
-  /**
-   * constructor.
-   */
+  /** constructor. */
   public ArchiveUtils() {}
 
   /**
    * Decompress .tar.gz or .zip files.
-   * 
+   *
    * @param archive {@link File}
    * @param outputDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean decompress(@Nonnull final File archive, @Nonnull final File outputDir)
-      throws IOException {
-    return archive.toString().endsWith(".zip") ? decompressZip(archive, outputDir)
-        : decompressTarGZip(archive, outputDir);
+  public void decompress(final File archive, final File outputDir) throws IOException {
+    if (archive.toString().endsWith(".zip")) {
+      decompressZip(archive, outputDir);
+    } else {
+      decompressTarGZip(archive, outputDir);
+    }
   }
 
   /**
    * Decompress .zip files.
-   * 
+   *
    * @param archive {@link File}
    * @param outputDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean decompressZip(@Nonnull final File archive, @Nonnull final File outputDir)
-      throws IOException {
-    try {
-      try (ArchiveInputStream in =
-          new ZipArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
-        return decompress(in, archive, outputDir);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
+  public void decompressZip(final File archive, final File outputDir) throws IOException {
+    try (ZipArchiveInputStream in =
+        new ZipArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
+      decompress(in, outputDir);
     }
   }
 
   /**
    * Decompress .tar.gz files.
-   * 
+   *
    * @param archive {@link File}
    * @param outputDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean decompressTarGZip(@Nonnull final File archive, @Nonnull final File outputDir)
-      throws IOException {
-    try {
-      try (ArchiveInputStream in = new TarArchiveInputStream(new GzipCompressorInputStream(
-          new BufferedInputStream(new FileInputStream(archive)), true))) {
-        return decompress(in, archive, outputDir);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw e;
+  public void decompressTarGZip(final File archive, final File outputDir) throws IOException {
+    try (TarArchiveInputStream in = new TarArchiveInputStream(new GzipCompressorInputStream(
+        new BufferedInputStream(new FileInputStream(archive)), true))) {
+      decompress(in, outputDir);
     }
   }
 
   /**
    * Decompress .jar files.
-   * 
+   *
    * @param archive {@link File}
    * @param outputDir {@link File}
-   * @return boolean
    * @throws IOException IOException
    */
-  public boolean decompressJar(@Nonnull final File archive, @Nonnull final File outputDir)
-      throws IOException {
-    try (ArchiveInputStream in =
+  public void decompressJar(final File archive, final File outputDir) throws IOException {
+    try (JarArchiveInputStream in =
         new JarArchiveInputStream(new BufferedInputStream(new FileInputStream(archive)))) {
-      return decompress(in, archive, outputDir);
+      decompress(in, outputDir);
     }
   }
 
-  private boolean decompress(@Nonnull final ArchiveInputStream in, @Nonnull final File archive,
-      @Nonnull final File outputDir) throws IOException {
+  private void decompress(final ArchiveInputStream<?> in, final File outputDir) throws IOException {
 
     Path directory = Path.of(outputDir.getCanonicalPath());
 
     if (!outputDir.exists()) {
-      createDirectories(directory);
+      Files.createDirectories(directory);
     }
 
     ArchiveEntry entry;
@@ -180,41 +157,29 @@ public class ArchiveUtils {
               }
             }
 
-            if (tarEntry != null && tarEntry.getMode() == 493) {
-              file.setExecutable(true);
+            int mode = tarEntry != null ? tarEntry.getMode() : -1;
+            if (tarEntry != null && (mode & 64) != 0) {
+              boolean ok = file.setExecutable(true, false);
+              if (!ok) {
+                throw new IOException("Unable to set executable permission on " + fullpath);
+              }
             }
           }
         }
       }
     }
-
-    return true;
   }
 
-  private @Nonnull FileSystem createResource() {
+  private FileSystem createResource() {
     return FileSystems.getDefault();
   }
 
-  private Path createParentDirectories(final Path path) throws IOException {
+  private void createParentDirectories(final Path path) throws IOException {
 
     Path parent = path.getParent();
 
     if (parent != null) {
-      createDirectories(parent);
-    }
-
-    return parent;
-  }
-
-  private void createDirectories(final Path directory) throws IOException {
-    if (!directory.toFile().exists()) {
-      Files.createDirectories(directory);
-    }
-
-    if (!directory.toFile().exists()) {
-      throw new ResourceException(MessageFormat.format(
-          "Unable to create directory '{0}', during extraction of archive contents.\n",
-          directory.toFile().getAbsolutePath()));
+      Files.createDirectories(parent);
     }
   }
 }

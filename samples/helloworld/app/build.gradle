@@ -9,23 +9,20 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.2.0'
+    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.7.0-SNAPSHOT'
 }
 
 sourceCompatibility = "11"
 targetCompatibility = "11"
 
 repositories {
-    // Use JCenter for resolving dependencies.
-    jcenter()
+    mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
     // Use JUnit test framework.
     testImplementation 'junit:junit:4.13'
-
-    // This dependency is used by the application.
-    implementation 'com.google.guava:guava:29.0-jre'
 }
 
 application {
@@ -36,8 +33,11 @@ application {
 // creates binary file 'app/build/graalvm/app'
 nativeImage {
     mainClassName = 'helloworld.App'
+    outputFileName = "server"
     enableCheckToolchain = true
     enableReportExceptionStackTraces = true
 }
 
-build.dependsOn graalvmNativeImage
+tasks.distTar.enabled = false
+distZip.dependsOn graalvmNativeImage
+startScripts.dependsOn graalvmNativeImage
