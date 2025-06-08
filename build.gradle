@@ -10,7 +10,7 @@ plugins {
 }
 
 group   'com.formkiq.gradle'
-version '1.7.0-SNAPSHOT'
+version '1.7.0'
 
 spotless {
     java {
