@@ -14,6 +14,7 @@
  */
 package com.formkiq.gradle.internal;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,11 +43,13 @@ public class Downloader {
    */
   public void download(final Collection<String> urls, final Path toFile) throws IOException {
 
+    boolean found = false;
     if (!toFile.toFile().exists()) {
 
       for (final String url : urls) {
 
         if (urlExists(url)) {
+          found = true;
           LOGGER.log(Level.INFO, "Downloading " + url + " to " + toFile);
           Path parent = toFile.getParent();
           if (parent != null) {
@@ -70,6 +73,10 @@ public class Downloader {
 
     } else {
       LOGGER.log(Level.INFO, "Downloaded file {0} already exists", toFile);
+    }
+
+    if (!found) {
+      throw new FileNotFoundException("Failed to download file from urls " + urls);
     }
   }
 

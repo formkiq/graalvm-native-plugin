@@ -84,15 +84,15 @@ public class NativeImageExecutor {
     new RuntimeDependenciesDecompress(project).apply(buildDir);
   }
 
-  private List<String> getBuildGraalvmImageArguments(final Project project, final Path buildDir) {
+  List<String> getBuildGraalvmImageArguments(final Project project, final Path buildDir) {
 
-    List<String> args = new ArrayList<>();
-    args.add("--report-unsupported-elements-at-runtime");
-    args.add("--no-server");
+    List<String> args = new ArrayList<>(new GraalvmParameterToStrings().apply(this.extension));
 
-    args.addAll(new GraalvmParameterToStrings().apply(this.extension));
+    String executableName = this.extension.getOutputFileName();
 
-    args.add("-H:Name=" + getExecutableName(project));
+    if (executableName != null) {
+      args.add("-H:Name=" + getExecutableName(project));
+    }
 
     args.addAll(new GraalvmClasspathArguments(buildDir).apply(this.extension));
 
@@ -123,7 +123,7 @@ public class NativeImageExecutor {
       throws IOException {
 
     String guExecutable = OperatingSystem.current().isWindows() ? "gu.cmd" : "gu";
-    Path gu = graalvmBaseDir.resolve(guExecutable);
+    Path gu = getGraalBin(graalvmBaseDir.toFile()).resolve(guExecutable);
 
     if (gu.toFile().exists()) {
       execOperations.exec(arg0 -> {
