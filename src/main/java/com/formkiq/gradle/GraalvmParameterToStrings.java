@@ -14,7 +14,12 @@ public class GraalvmParameterToStrings implements Function<GraalvmNativeExtensio
     List<String> args = new ArrayList<>();
 
     if (extension.getBuildOptions() != null) {
-      args.add(extension.getBuildOptions());
+      String[] split = extension.getBuildOptions().split("-");
+      for (String s : split) {
+        if (!s.isEmpty()) {
+          args.add("-" + s.trim());
+        }
+      }
     }
 
     addBooleanArgument(args, extension.isEnableFallback(), "--no-fallback");

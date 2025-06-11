@@ -81,7 +81,7 @@ class GraalvmParameterToStringsTest {
     // apply(...)
     List<String> expected = List.of(
         // 1. buildOptions
-        "myBuildOptions",
+        "-myBuildOptions",
         // 2. boolean flags in declaration order
         "--no-fallback", "--allow-incomplete-classpath", "--install-exit-handlers",
         // disabled HTTP/HTTPS → do not appear
