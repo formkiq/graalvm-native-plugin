@@ -10,7 +10,7 @@ plugins {
 }
 
 group   'com.formkiq.gradle'
-version '1.7.0'
+version '1.7.1'
 
 spotless {
     java {
@@ -56,7 +56,7 @@ spotbugsMain {
 
 spotless { 
     java { 
-      eclipse().configFile project.rootProject.file("spotless.eclipseformat.xml") 
+      eclipse().configFile rootProject.file("spotless.eclipseformat.xml")
 	} 
 }
 	
