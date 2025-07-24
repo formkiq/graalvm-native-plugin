@@ -103,4 +103,21 @@ class GraalvmParameterToStringsTest {
     assertEquals(expected, args,
         "When all properties are set, the resulting argument list must match exactly.");
   }
+
+  @Test
+  void testMinusHparameters() {
+    // given
+    Project project = ProjectBuilder.builder().build();
+    ObjectFactory objects = project.getObjects();
+    GraalvmNativeExtension extension = new GraalvmNativeExtension(objects);
+    extension.setBuildOptions("-Os -H:-ReduceImplicitExceptionStackTraceInformation");
+
+    // when
+    List<String> args = new GraalvmParameterToStrings().apply(extension);
+
+    // then
+    List<String> expected = List.of("-Os", "-H:-ReduceImplicitExceptionStackTraceInformation",
+        "--enable-http", "--enable-https");
+    assertEquals(expected, args);
+  }
 }

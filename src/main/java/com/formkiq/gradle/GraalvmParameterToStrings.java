@@ -14,7 +14,7 @@ public class GraalvmParameterToStrings implements Function<GraalvmNativeExtensio
     List<String> args = new ArrayList<>();
 
     if (extension.getBuildOptions() != null) {
-      String[] split = extension.getBuildOptions().split("-");
+      String[] split = extension.getBuildOptions().split("\\s-|^-");
       for (String s : split) {
         if (!s.isEmpty()) {
           args.add("-" + s.trim());
