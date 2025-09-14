@@ -33,14 +33,15 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.resources.ResourceException;
 import org.gradle.api.tasks.Classpath;
-import org.gradle.api.tasks.InputDirectory;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
+import org.gradle.api.tasks.SkipWhenEmpty;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 
@@ -48,35 +49,39 @@ import org.gradle.process.ExecOperations;
 public abstract class GraalvmNativeTask extends DefaultTask {
 
   /**
-   * The directory containing your main source set.
-   *
-   * @return DirectoryProperty
-   */
-  @InputDirectory
-  public abstract DirectoryProperty getSourceDir();
-
-  /**
-   * Get Runtime Classpath.
+   * Java + resources that influence the native image.
    *
    * @return ConfigurableFileCollection
    */
+  @InputFiles
+  @SkipWhenEmpty
+  @PathSensitive(PathSensitivity.RELATIVE)
+  public abstract ConfigurableFileCollection getSources();
+
+  /**
+   * Runtime classpath (jars/classes/resources) for native-image.
+   *
+   * @return ConfigurableFileCollection
+   */
+  @InputFiles
   @Classpath
   public abstract ConfigurableFileCollection getRuntimeClasspath();
 
   /**
-   * Where we'll write out the native image.
+   * Output Directory binary.
    *
    * @return DirectoryProperty
    */
   @OutputDirectory
-  public abstract DirectoryProperty getOutputDir();
+  public abstract DirectoryProperty getBuildDirectory();
 
-  private final ExecOperations execOperations;
-  private final Path buildDirectory;
-  private final Path projectDirectory;
-
-  /** {@link GraalvmNativeExtension}. */
-  private GraalvmNativeExtension extension;
+  /**
+   * Use {@link ExecOperations} instead of project.exec(...).
+   *
+   * @return ExecOperations
+   */
+  @Inject
+  protected abstract ExecOperations getExecOperations();
 
   /** {@link ArchiveUtils}, */
   private final ArchiveUtils archiveUtils = new ArchiveUtils();
@@ -84,79 +89,69 @@ public abstract class GraalvmNativeTask extends DefaultTask {
   /** {@link Downloader}. */
   private final Downloader downloader = new Downloader();
 
+  // The extension with your ~20 inputs:
+  private GraalvmNativeExtension extension;
+
   /**
-   * constructor.
+   * Set Extension.
    *
-   * @param layout {@link ProjectLayout}
-   * @param configurations {@link ConfigurationContainer}
-   * @param execOperations {@link ExecOperations}
+   * @param params {@link GraalvmNativeExtension}
    */
-  @Inject
-  public GraalvmNativeTask(final ProjectLayout layout, final ConfigurationContainer configurations,
-      final ExecOperations execOperations) {
-
-    this.execOperations = execOperations;
-
-    if (Path.of("src/main/java").toFile().exists()) {
-      getSourceDir().set(layout.getProjectDirectory().dir("src/main/java"));
-    } else {
-      getSourceDir().set(layout.getProjectDirectory());
-    }
-
-    getRuntimeClasspath().from(configurations.named("runtimeClasspath"));
-
-    getOutputDir().set(layout.getBuildDirectory().dir("graalvm"));
-    this.setGroup("build");
-    this.setDescription("Builds a native image for Java applications using GraalVM tools");
-    buildDirectory = layout.getBuildDirectory().get().getAsFile().toPath();
-    projectDirectory = layout.getProjectDirectory().getAsFile().toPath();
+  public void setExtension(final GraalvmNativeExtension params) {
+    this.extension = params;
   }
 
   /** Create GraalVM Image. */
   @TaskAction
   public void createImage() {
 
-    try {
+    if (extension.getMainClassName() != null) {
+      try {
 
-      NativeImageExecutor executor = new NativeImageExecutor(this.extension);
+        NativeImageExecutor executor = new NativeImageExecutor(this.extension);
 
-      if (this.extension.getDockerFile() != null) {
-        executeDockerFile();
-      } else if (this.extension.getDockerImage() != null) {
+        if (this.extension.getDockerFile() != null) {
+          executeDockerFile();
+        } else if (this.extension.getDockerImage() != null) {
 
-        executeDockerImage(executor);
+          executeDockerImage(executor);
 
-      } else {
+        } else {
 
-        Path buildDirGraalvm = buildDirectory.resolve("graalvm");
-        Path toFile = buildDirGraalvm.resolve(getFilename());
+          Path buildDirGraalvm = getBuildDirectoryAsPath().resolve("graalvm");
+          Path toFile = buildDirGraalvm.resolve(getFilename());
 
-        if (this.extension.getImageFile() == null) {
-          List<String> urls =
-              GraalVmUrlBuilder.builder().withJavaVersion(this.extension.getJavaVersion())
-                  .withVersion(this.extension.getImageVersion()).withPlatform(Platform.detect())
-                  .build();
-          downloader.download(urls, toFile);
+          if (this.extension.getImageFile() == null) {
+            List<String> urls =
+                GraalVmUrlBuilder.builder().withJavaVersion(this.extension.getJavaVersion())
+                    .withVersion(this.extension.getImageVersion()).withPlatform(Platform.detect())
+                    .build();
+            downloader.download(urls, toFile);
+          }
+
+          archiveUtils.decompress(toFile.toFile(), buildDirGraalvm.toFile());
+
+          String folder = getFirstSubdirectory(buildDirGraalvm);
+          Path graalvmBaseDir = buildDirGraalvm.resolve(folder);
+
+          Path path = getBuildDirectoryAsPath().resolve("java/main");
+          if (path.toFile().exists()) {
+            deleteDirectory(path);
+          }
+
+          executor.runGuInstallation(getExecOperations(), graalvmBaseDir);
+          executor.runNativeImage(getExecOperations(), getProject(), getBuildDirectoryAsPath(),
+              graalvmBaseDir.toFile(), path.toFile(), getRuntimeClasspath());
         }
 
-        archiveUtils.decompress(toFile.toFile(), buildDirGraalvm.toFile());
-
-        String folder = getFirstSubdirectory(buildDirGraalvm);
-        Path graalvmBaseDir = buildDirGraalvm.resolve(folder);
-
-        Path path = buildDirectory.resolve("graalvm/java/main");
-        if (path.toFile().exists()) {
-          deleteDirectory(path);
-        }
-
-        executor.runGuInstallation(this.execOperations, graalvmBaseDir);
-        executor.runNativeImage(this.execOperations, getProject(), buildDirectory,
-            graalvmBaseDir.toFile(), path.toFile());
+      } catch (IOException | InterruptedException e) {
+        throw new ResourceException(e.getMessage(), e);
       }
-
-    } catch (IOException | InterruptedException e) {
-      throw new ResourceException(e.getMessage(), e);
     }
+  }
+
+  private Path getBuildDirectoryAsPath() {
+    return getBuildDirectory().get().getAsFile().toPath();
   }
 
   private void executeDockerFile() throws IOException, InterruptedException {
@@ -167,11 +162,12 @@ public abstract class GraalvmNativeTask extends DefaultTask {
     }
 
     String dockerfileContent = Files.readString(Path.of(this.extension.getDockerFile()));
-    getLogger().info("Generating Dockerfile {}", dockerfileContent);
+    getLogger().info("Generating Dockerfile");
+    getLogger().info("{}", dockerfileContent);
 
     service.removeDockerImage(this.extension.getOutputImageTag());
 
-    Path buildDir = buildDirectory;
+    Path buildDir = getBuildDirectoryAsPath();
     service.buildDockerImage(buildDir, this.extension.getOutputImageTag(), dockerfileContent);
     service.runDockerImage(buildDir, this.extension.getOutputImageTag());
   }
@@ -184,22 +180,24 @@ public abstract class GraalvmNativeTask extends DefaultTask {
       throw new ResourceException("Docker is not running");
     }
 
-    executor.buildGraalvmJavaMain(getProject(), buildDirectory);
+    getRuntimeClasspath().forEach(path -> getLogger().info("FOUND PATH: " + path));
+    executor.buildGraalvmJavaMain(getBuildDirectoryAsPath(), getRuntimeClasspath());
 
     DockerfileGenerator.Builder builder =
         DockerfileGenerator.builder().baseImage(this.extension.getDockerImage())
-            .addNativeImageArgs(this.extension).mainClass(this.extension.getMainClassName());
+            .addNativeImageArgs(this.extension).mainClass(this.extension.getMainClassName().get());
 
     if (this.extension.getOutputFileName() != null) {
       builder.addNativeImageArg("-H:Name=" + this.extension.getOutputFileName());
     }
 
-    String dockerfileContent = builder.build().generateContents(buildDirectory);
-    getLogger().info("Generating Dockerfile {}", dockerfileContent);
+    String dockerfileContent = builder.build().generateContents(getBuildDirectoryAsPath());
+    getLogger().info("Generating Dockerfile");
+    getLogger().info("{}", dockerfileContent);
 
     service.removeDockerImage(this.extension.getOutputImageTag());
 
-    Path buildDir = buildDirectory;
+    Path buildDir = getBuildDirectoryAsPath();
     service.buildDockerImage(buildDir, this.extension.getOutputImageTag(), dockerfileContent);
     service.runDockerImage(buildDir, this.extension.getOutputImageTag());
   }
@@ -233,44 +231,12 @@ public abstract class GraalvmNativeTask extends DefaultTask {
     }
   }
 
-  private String getExtension() {
+  private String getFilenameExtension() {
     String os = System.getProperty("os.name").toLowerCase();
     return os.startsWith("windows") ? "zip" : "tar.gz";
   }
 
   private String getFilename() {
-    return MessageFormat.format("graalvm-ce.{0}", getExtension());
-  }
-
-  /**
-   * Source Input Directory.
-   *
-   * @return {@link File}
-   */
-  @InputDirectory
-  public File getSourceFileDir() {
-    File file = null;
-    String dockerFile = this.extension.getDockerFile();
-
-    if (dockerFile != null) {
-      Path p = Path.of(dockerFile);
-      Path parent = p.getParent();
-      file = parent != null ? parent.toFile() : projectDirectory.toFile();
-    }
-
-    if (file == null) {
-      file = projectDirectory.resolve("src").resolve("main").toFile();
-    }
-
-    return file;
-  }
-
-  /**
-   * Set {@link GraalvmNativeExtension}.
-   *
-   * @param ext {@link GraalvmNativeExtension}
-   */
-  public void setExtension(final GraalvmNativeExtension ext) {
-    this.extension = ext;
+    return MessageFormat.format("graalvm-ce.{0}", getFilenameExtension());
   }
 }

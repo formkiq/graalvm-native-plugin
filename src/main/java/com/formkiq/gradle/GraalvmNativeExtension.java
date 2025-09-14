@@ -289,10 +289,10 @@ public class GraalvmNativeExtension {
   /**
    * Get Main Class Name.
    *
-   * @return {@link String}
+   * @return {@link Property} {@link String}
    */
-  public String getMainClassName() {
-    return this.mainClassName.get();
+  public Property<String> getMainClassName() {
+    return this.mainClassName;
   }
 
   /**

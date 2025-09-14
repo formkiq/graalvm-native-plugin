@@ -85,7 +85,7 @@ public final class DefaultDockerService implements DockerService {
   public void runDockerImage(final Path buildDir, final String imageTag)
       throws IOException, InterruptedException {
 
-    Path path = buildDir.resolve("graalvm/output");
+    Path path = buildDir.resolve("output");
     Files.createDirectories(path);
 
     Volume containerOutputVolume = new Volume("/output");

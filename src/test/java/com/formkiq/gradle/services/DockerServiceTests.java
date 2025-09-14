@@ -19,7 +19,7 @@ class DockerServiceTests {
 
   private static final String TEST_IMAGE_NAME = "generated-graalvm-native-plugin";
   private static final String DOCKER_IMAGE_24 = "ghcr.io/graalvm/native-image-community:24.0.1";
-  private static final Path BUILD_DIR = Paths.get("build");
+  private static final Path BUILD_DIR = Paths.get("build/graalvm");
   private static final Path PATH = BUILD_DIR.resolve(GRAALVM_JAVA_MAIN);
 
   @Test

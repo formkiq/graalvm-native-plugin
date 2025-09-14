@@ -27,7 +27,7 @@ public class ShellDockerService implements DockerService {
   @Override
   public void runDockerImage(final Path buildDir, final String imageTag) throws IOException {
 
-    Path dir = buildDir.resolve("graalvm/output");
+    Path dir = buildDir.resolve("output");
 
     Files.createDirectories(dir);
     String hostOutputDir = dir.toAbsolutePath().toString();

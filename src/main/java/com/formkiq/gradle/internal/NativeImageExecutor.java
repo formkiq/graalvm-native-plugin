@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.tools.ant.helper.DefaultExecutor;
 import org.gradle.api.Project;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.internal.os.OperatingSystem;
 import org.gradle.process.ExecOperations;
 
@@ -35,7 +36,7 @@ import org.gradle.process.ExecOperations;
 public class NativeImageExecutor {
 
   /** Graalvm Java Main. */
-  public static final String GRAALVM_JAVA_MAIN = "graalvm/java/main";
+  public static final String GRAALVM_JAVA_MAIN = "java/main";
 
   /** {@link GraalvmNativeExtension}. */
   private final GraalvmNativeExtension extension;
@@ -77,11 +78,12 @@ public class NativeImageExecutor {
   /**
    * Build Graalvm classes folder.
    *
-   * @param project {@link Project}
    * @param buildDir {@link Path}
+   * @param runtimeClasspath {@link ConfigurableFileCollection}
    */
-  public void buildGraalvmJavaMain(final Project project, final Path buildDir) {
-    new RuntimeDependenciesDecompress(project).apply(buildDir);
+  public void buildGraalvmJavaMain(final Path buildDir,
+      final ConfigurableFileCollection runtimeClasspath) {
+    new RuntimeDependenciesDecompress().apply(buildDir, runtimeClasspath);
   }
 
   List<String> getBuildGraalvmImageArguments(final Project project, final Path buildDir) {
@@ -96,7 +98,7 @@ public class NativeImageExecutor {
 
     args.addAll(new GraalvmClasspathArguments(buildDir).apply(this.extension));
 
-    args.add(this.extension.getMainClassName());
+    args.add(this.extension.getMainClassName().get());
 
     return args;
   }
@@ -141,12 +143,14 @@ public class NativeImageExecutor {
    * @param buildDir {@link Path}
    * @param graalvmBaseDir {@link Files}
    * @param outputDir {@link File}
+   * @param runtimeClasspath {@link ConfigurableFileCollection}
    * @throws IOException IOException
    */
   public void runNativeImage(final ExecOperations execOperations, final Project project,
-      final Path buildDir, final File graalvmBaseDir, File outputDir) throws IOException {
+      final Path buildDir, final File graalvmBaseDir, File outputDir,
+      final ConfigurableFileCollection runtimeClasspath) throws IOException {
 
-    buildGraalvmJavaMain(project, buildDir);
+    buildGraalvmJavaMain(buildDir, runtimeClasspath);
 
     buildGraalvmImage(execOperations, project, buildDir, graalvmBaseDir, outputDir);
   }
