@@ -38,7 +38,7 @@ public interface DockerService {
   default Path writeDockerFile(final Path buildDir, final String dockerFileContent)
       throws IOException {
 
-    Path dir = buildDir.resolve("graalvm/java/main");
+    Path dir = buildDir.resolve("java/main");
     Files.createDirectories(dir);
 
     Path dockerfilePath = Path.of(dir.toString(), "Dockerfile");

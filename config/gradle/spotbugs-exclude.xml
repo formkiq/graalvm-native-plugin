@@ -42,6 +42,13 @@ For a detailed description of spotbugs bug categories, see https://spotbugs.read
     </Match>
 
     <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <OR>
+            <Class name="com.formkiq.gradle.GraalvmNativeExtension"/>
+        </OR>
+    </Match>
+
+    <Match>
         <Bug pattern="EI_EXPOSE_REP2"/>
         <OR>
             <Class name="com.formkiq.gradle.GraalvmNativeTask"/>

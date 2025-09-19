@@ -9,7 +9,7 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
-    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.7.0-SNAPSHOT'
+    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.7.3'
 }
 
 sourceCompatibility = "11"
