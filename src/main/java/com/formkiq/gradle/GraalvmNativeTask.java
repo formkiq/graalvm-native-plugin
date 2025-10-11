@@ -36,6 +36,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.resources.ResourceException;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
@@ -46,6 +47,7 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.process.ExecOperations;
 
 /** Graalvm Build Task Plugin. */
+@CacheableTask
 public abstract class GraalvmNativeTask extends DefaultTask {
 
   /**
@@ -180,7 +182,6 @@ public abstract class GraalvmNativeTask extends DefaultTask {
       throw new ResourceException("Docker is not running");
     }
 
-    getRuntimeClasspath().forEach(path -> getLogger().info("FOUND PATH: " + path));
     executor.buildGraalvmJavaMain(getBuildDirectoryAsPath(), getRuntimeClasspath());
 
     DockerfileGenerator.Builder builder =
