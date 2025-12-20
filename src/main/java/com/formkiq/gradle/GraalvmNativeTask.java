@@ -38,6 +38,7 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.resources.ResourceException;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
@@ -76,6 +77,67 @@ public abstract class GraalvmNativeTask extends DefaultTask {
    */
   @OutputDirectory
   public abstract DirectoryProperty getBuildDirectory();
+
+  /**
+   * Extension configuration fingerprint for task caching.
+   *
+   * @return String
+   */
+  @Input
+  public String getExtensionFingerprint() {
+    if (this.extension == null) {
+      return "";
+    }
+
+    StringBuilder sb = new StringBuilder();
+    appendFingerprint(sb, "addClasspath", this.extension.getAddClasspath());
+    appendFingerprint(sb, "buildOptions", this.extension.getBuildOptions());
+    appendFingerprint(sb, "dockerFile", this.extension.getDockerFile());
+    appendFingerprint(sb, "dockerImage", this.extension.getDockerImage());
+    appendFingerprint(sb, "features", this.extension.getFeatures());
+    appendFingerprint(sb, "imageFile", this.extension.getImageFile());
+    appendFingerprint(sb, "imageVersion", this.extension.getImageVersion());
+    appendFingerprint(sb, "initializeAtBuildTime", this.extension.getInitializeAtBuildTime());
+    appendFingerprint(sb, "initializeAtRunTime", this.extension.getInitializeAtRunTime());
+    appendFingerprint(sb, "javaVersion", this.extension.getJavaVersion());
+    appendFingerprint(sb, "jniConfigurationFiles", this.extension.getJniConfigurationFiles());
+    appendFingerprint(sb, "mainClassName", this.extension.getMainClassName().getOrNull());
+    appendFingerprint(sb, "outputFileName", this.extension.getOutputFileName());
+    appendFingerprint(sb, "outputImageTag", this.extension.getOutputImageTag());
+    appendFingerprint(sb, "platform", this.extension.getPlatform());
+    appendFingerprint(sb, "reflectionConfig", this.extension.getReflectionConfig());
+    appendFingerprint(sb, "resourceConfigurationFiles",
+        this.extension.getResourceConfigurationFiles());
+    appendFingerprint(sb, "serializationConfig", this.extension.getSerializationConfig());
+    appendFingerprint(sb, "systemProperty", this.extension.getSystemProperty());
+    appendFingerprint(sb, "traceClassInitialization", this.extension.getTraceClassInitialization());
+    appendFingerprint(sb, "enableAddAllCharsets", this.extension.isEnableAddAllCharsets());
+    appendFingerprint(sb, "enableAllowIncompleteClasspath",
+        this.extension.isAllowIncompleteClasspath());
+    appendFingerprint(sb, "enableAllSecurityServices",
+        this.extension.isEnableAllSecurityServices());
+    appendFingerprint(sb, "enableAutoFallback", this.extension.isEnableAutofallback());
+    appendFingerprint(sb, "enableCheckToolchain", this.extension.isEnableCheckToolchain());
+    appendFingerprint(sb, "enableForceFallback", this.extension.isEnableForceFallback());
+    appendFingerprint(sb, "enableHttp", this.extension.isEnableHttp());
+    appendFingerprint(sb, "enableHttps", this.extension.isEnableHttps());
+    appendFingerprint(sb, "enableInstallExitHandlers",
+        this.extension.isEnableInstallExitHandlers());
+    appendFingerprint(sb, "enableNoFallback", this.extension.isEnableFallback());
+    appendFingerprint(sb, "enablePrintAnalysisCallTree",
+        this.extension.isEnablePrintAnalysisCallTree());
+    appendFingerprint(sb, "enableRemoveSaturatedTypeFlows",
+        this.extension.isEnableRemoveSaturatedTypeFlows());
+    appendFingerprint(sb, "enableReportExceptionStackTraces",
+        this.extension.isEnableReportExceptionStackTraces());
+    appendFingerprint(sb, "enableReportUnsupportedElementsAtRuntime",
+        this.extension.isEnableReportUnsupportedElementsAtRuntime());
+    appendFingerprint(sb, "enableShared", this.extension.isEnableShared());
+    appendFingerprint(sb, "enableStatic", this.extension.isEnableStatic());
+    appendFingerprint(sb, "enableVerbose", this.extension.isEnableVerbose());
+
+    return sb.toString();
+  }
 
   /**
    * Use {@link ExecOperations} instead of project.exec(...).
@@ -239,5 +301,9 @@ public abstract class GraalvmNativeTask extends DefaultTask {
 
   private String getFilename() {
     return MessageFormat.format("graalvm-ce.{0}", getFilenameExtension());
+  }
+
+  private void appendFingerprint(final StringBuilder sb, final String key, final Object value) {
+    sb.append(key).append('=').append(String.valueOf(value)).append('\n');
   }
 }

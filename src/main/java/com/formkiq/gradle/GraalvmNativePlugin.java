@@ -77,41 +77,5 @@ public class GraalvmNativePlugin implements Plugin<Project> {
       project.getPlugins().withId("distribution",
           __ -> project.getTasks().named("distZip").configure(t -> t.dependsOn(nativeImage)));
     });
-
-    // TaskProvider<GraalvmNativeTask> nativeImage =
-    // project.getTasks().register("graalvmNativeImage", GraalvmNativeTask.class, task -> {
-    // task.setGroup("Graalvm");
-    // task.setDescription("Build GraalVM Native Image");
-    // task.setExtension(ext);
-    // task.usesService(svc);
-    // task.onlyIf(t -> ext.getMainClassName().isPresent());
-    //
-    // task.getBuildDirectory().set(project.getLayout().getBuildDirectory().dir("graalvm"));
-    // });
-    //
-    // project.getPlugins().withType(JavaPlugin.class, jp -> {
-    // SourceSetContainer sourceSets =
-    // project.getExtensions().getByType(SourceSetContainer.class);
-    // SourceSet main = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-    //
-    // // Inputs
-    // nativeImage.configure(t -> {
-    // t.getSources().from(main.getAllSource()); // sources (java + resources)
-    // t.getRuntimeClasspath().from(main.getRuntimeClasspath()); // runtime jars/classes
-    // });
-    //
-    // nativeImage.configure(t ->
-    // t.dependsOn(project.getTasks().named(JavaPlugin.JAR_TASK_NAME)));
-    // });
-    //
-    // // Make assemble run AFTER native image (i.e., assemble depends on native)
-    // project.getTasks()
-    // .named(org.gradle.language.base.plugins.LifecycleBasePlugin.ASSEMBLE_TASK_NAME)
-    // .configure(t -> t.dependsOn(nativeImage));
-    //
-    // // If using the Distribution plugin, make distZip run AFTER native image
-    // project.getPlugins().withId("distribution", p -> {
-    // project.getTasks().named("distZip").configure(t -> t.dependsOn(nativeImage));
-    // });
   }
 }
