@@ -1,7 +1,7 @@
 
 plugins {
     id 'java-library'
-    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.7.3'
+    id 'com.formkiq.gradle.graalvm-native-plugin' version '1.7.4'
 }
 
 repositories {
@@ -30,5 +30,3 @@ nativeImage {
     enableStatic = true
     reflectionConfig = "META-INF/graal/reflect.json"
 }
-
-build.dependsOn graalvmNativeImage

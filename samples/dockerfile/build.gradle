@@ -13,5 +13,3 @@ nativeImage {
     dockerFile = 'Dockerfile'
     outputImageTag = 'myimage'
 }
-
-build.dependsOn graalvmNativeImage
