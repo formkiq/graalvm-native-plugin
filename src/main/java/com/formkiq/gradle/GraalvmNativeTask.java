@@ -191,6 +191,9 @@ public abstract class GraalvmNativeTask extends DefaultTask {
                     .withVersion(this.extension.getImageVersion()).withPlatform(Platform.detect())
                     .build();
             downloader.download(urls, toFile);
+
+          } else {
+            toFile = Path.of(this.extension.getImageFile());
           }
 
           archiveUtils.decompress(toFile.toFile(), buildDirGraalvm.toFile());
