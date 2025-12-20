@@ -71,12 +71,12 @@ public class Downloader {
         }
       }
 
+      if (!found) {
+        throw new FileNotFoundException("Failed to download file from urls " + urls);
+      }
+
     } else {
       LOGGER.log(Level.INFO, "Downloaded file {0} already exists", toFile);
-    }
-
-    if (!found) {
-      throw new FileNotFoundException("Failed to download file from urls " + urls);
     }
   }
 
