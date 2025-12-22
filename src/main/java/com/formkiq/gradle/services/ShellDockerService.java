@@ -1,12 +1,10 @@
 package com.formkiq.gradle.services;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 /** Shell-based implementation using the Docker CLI. */
 public class ShellDockerService implements DockerService {
@@ -62,11 +60,11 @@ public class ShellDockerService implements DockerService {
 
   @Override
   public Path buildDockerImage(final Path buildDir, final String imageTag,
-      final String dockerFileContent) throws IOException {
+      final String dockerFileContent, final Path contextDir) throws IOException {
 
     Path dockerfile = writeDockerFile(buildDir, dockerFileContent);
-    File contextDir =
-        Optional.ofNullable(dockerfile.getParent()).map(Path::toFile).orElse(new File("."));
+    // File contextDir =
+    // Optional.ofNullable(dockerfile.getParent()).map(Path::toFile).orElse(new File("."));
 
     ProcessBuilder pb = new ProcessBuilder("docker", "build", "-t", imageTag, "-f",
         dockerfile.toString(), contextDir.toString());

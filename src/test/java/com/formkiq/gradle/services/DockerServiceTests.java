@@ -26,15 +26,17 @@ class DockerServiceTests {
   void testDefaultServiceBuildDockerImage() throws IOException {
     // given
     Files.createDirectories(PATH);
-    DefaultDockerService service = new DefaultDockerService();
+    DefaultDockerService service = new DefaultDockerService(null);
     List<String> nativeArgs = List.of();
 
     DockerfileGenerator gen = DockerfileGenerator.builder().baseImage(DOCKER_IMAGE_24)
         .addNativeImageArgs(nativeArgs).mainClass(null).build();
 
+    Path contextDir = BUILD_DIR.resolve(GRAALVM_JAVA_MAIN);
+
     // when
-    Path outputPath =
-        service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME, gen.generateContents(BUILD_DIR));
+    Path outputPath = service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME,
+        gen.generateContents(BUILD_DIR), contextDir);
 
     // then
     assertTrue(Files.exists(outputPath), "Dockerfile should be created");
@@ -49,15 +51,17 @@ class DockerServiceTests {
   void testDefaultServiceRunDockerImage() throws IOException, InterruptedException {
     // given
     String dockerFileContent = getDockerfileContent("dockerfile/Dockerfile3");
+    Path contextDir = BUILD_DIR.resolve(GRAALVM_JAVA_MAIN);
 
-    for (DockerService service : List.of(new DefaultDockerService(), new ShellDockerService())) {
+    for (DockerService service : List.of(new DefaultDockerService(null),
+        new ShellDockerService())) {
 
       FileUtils.deleteRecursively(PATH);
       FileUtils.deleteRecursively(Path.of("build", "graalvm"));
 
       // when
       service.removeDockerImage(TEST_IMAGE_NAME);
-      service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME, dockerFileContent);
+      service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME, dockerFileContent, contextDir);
       service.runDockerImage(BUILD_DIR, TEST_IMAGE_NAME);
 
       // then
@@ -68,7 +72,7 @@ class DockerServiceTests {
 
   @Test
   void testDefaultServiceIsDockerRunningDoesNotThrow() {
-    DefaultDockerService service = new DefaultDockerService();
+    DefaultDockerService service = new DefaultDockerService(null);
     assertDoesNotThrow(() -> {
       boolean running = service.isDockerRunning();
       assertTrue(running, "isDockerRunning should return a boolean and not throw");
@@ -79,6 +83,7 @@ class DockerServiceTests {
   void testShellServiceBuildDockerImage() throws IOException {
     // given
     Files.createDirectories(PATH);
+    Path contextDir = BUILD_DIR.resolve(GRAALVM_JAVA_MAIN);
     ShellDockerService service = new ShellDockerService();
     List<String> nativeArgs = List.of();
 
@@ -86,8 +91,8 @@ class DockerServiceTests {
         .addNativeImageArgs(nativeArgs).mainClass(null).build();
 
     // when
-    Path outputPath =
-        service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME, gen.generateContents(BUILD_DIR));
+    Path outputPath = service.buildDockerImage(BUILD_DIR, TEST_IMAGE_NAME,
+        gen.generateContents(BUILD_DIR), contextDir);
 
     // then
     assertTrue(Files.exists(outputPath), "Dockerfile should be created");

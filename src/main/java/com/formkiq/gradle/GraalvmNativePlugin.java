@@ -34,48 +34,42 @@ public class GraalvmNativePlugin implements Plugin<Project> {
     Provider<GraalvmBuildService> svc = project.getGradle().getSharedServices().registerIfAbsent(
         "web", GraalvmBuildService.class, spec -> spec.getMaxParallelUsages().set(1));
 
-    project.afterEvaluate(p -> {
-      // Treat "configured" as: user set mainClassName (adjust the predicate if you prefer)
-      boolean configured = ext.getMainClassName().isPresent();
+    // ✅ Register task immediately so tasks.named(...) always works
+    TaskProvider<GraalvmNativeTask> nativeImage =
+        project.getTasks().register("graalvmNativeImage", GraalvmNativeTask.class, task -> {
+          task.setGroup("Graalvm");
+          task.setDescription("Build GraalVM Native Image");
+          task.setExtension(ext);
+          task.usesService(svc);
+          task.getBuildDirectory().set(project.getLayout().getBuildDirectory().dir("graalvm"));
 
-      if (!configured) {
-        // User didn't declare nativeImage { ... } in this subproject — do nothing.
-        return;
-      }
-
-      // Register the task now that we know it's wanted in this project
-      TaskProvider<GraalvmNativeTask> nativeImage =
-          project.getTasks().register("graalvmNativeImage", GraalvmNativeTask.class, task -> {
-            task.setGroup("Graalvm");
-            task.setDescription("Build GraalVM Native Image");
-            task.setExtension(ext); // inject the extension (nested inputs)
-            task.usesService(svc);
-            task.getBuildDirectory().set(project.getLayout().getBuildDirectory().dir("graalvm"));
+          // ✅ Opt-in: task will only run if configured
+          task.onlyIf(t -> {
+            String dockerFile = ext.getDockerFile();
+            return ext.getMainClassName().isPresent()
+                || (dockerFile != null && !dockerFile.isBlank());
           });
-
-      // Wire only if the Java plugin is applied
-      project.getPlugins().withType(JavaPlugin.class, jp -> {
-        SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
-        SourceSet main = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
-
-        // Inputs
-        nativeImage.configure(t -> {
-          t.getSources().from(main.getAllSource()); // java + resources
-          t.getRuntimeClasspath().from(main.getRuntimeClasspath()); // runtime jars/classes
         });
 
-        // Ensure producers run first (jar is enough; avoids assemble cycles)
-        nativeImage.configure(t -> t.dependsOn(project.getTasks().named(JavaPlugin.JAR_TASK_NAME)));
+    // Wire only if Java plugin is applied
+    project.getPlugins().withType(JavaPlugin.class, jp -> {
+      SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
+      SourceSet main = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME);
+
+      nativeImage.configure(t -> {
+        t.getSources().from(main.getAllSource());
+        t.getRuntimeClasspath().from(main.getRuntimeClasspath());
+        t.dependsOn(project.getTasks().named(JavaPlugin.JAR_TASK_NAME));
+        t.dependsOn(project.getTasks().named(JavaPlugin.TEST_TASK_NAME));
       });
-
-      // If you want assemble to run AFTER native image in projects that opted in
-      project.getTasks()
-          .named(org.gradle.language.base.plugins.LifecycleBasePlugin.ASSEMBLE_TASK_NAME)
-          .configure(t -> t.dependsOn(nativeImage));
-
-      // If the Distribution plugin is applied, make distZip wait for native image
-      project.getPlugins().withId("distribution",
-          __ -> project.getTasks().named("distZip").configure(t -> t.dependsOn(nativeImage)));
     });
+
+    // Safe: assemble depends on nativeImage, but nativeImage will be SKIPPED if not configured
+    project.getTasks()
+        .named(org.gradle.language.base.plugins.LifecycleBasePlugin.ASSEMBLE_TASK_NAME)
+        .configure(t -> t.dependsOn(nativeImage));
+
+    project.getPlugins().withId("distribution",
+        __ -> project.getTasks().named("distZip").configure(t -> t.dependsOn(nativeImage)));
   }
 }
