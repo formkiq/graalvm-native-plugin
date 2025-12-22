@@ -14,11 +14,12 @@
  */
 package com.formkiq.gradle;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.gradle.api.Project;
+import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /** Unit test for the 'com.formkiq.gradle.graalvm-native-plugin' plugin. */
 public class GraalvmNativePluginTest {
@@ -30,6 +31,23 @@ public class GraalvmNativePluginTest {
     Project project = ProjectBuilder.builder().build();
     project.getPlugins().apply("java-gradle-plugin");
     project.getPlugins().apply("com.formkiq.gradle.graalvm-native-plugin");
+    project.getExtensions().getByType(GraalvmNativeExtension.class)
+        .setMainClassName("com.example.Main");
+    ((ProjectInternal) project).evaluate();
+
+    // Verify the result
+    assertNotNull(project.getTasks().findByName("graalvmNativeImage"));
+  }
+
+  /** Test Registering Task with dockerFile. */
+  @Test
+  public void pluginRegistersATaskWithDockerfile() {
+    // Create a test project and apply the plugin
+    Project project = ProjectBuilder.builder().build();
+    project.getPlugins().apply("java-gradle-plugin");
+    project.getPlugins().apply("com.formkiq.gradle.graalvm-native-plugin");
+    project.getExtensions().getByType(GraalvmNativeExtension.class).setDockerFile("Dockerfile");
+    ((ProjectInternal) project).evaluate();
 
     // Verify the result
     assertNotNull(project.getTasks().findByName("graalvmNativeImage"));

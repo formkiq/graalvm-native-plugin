@@ -1,9 +1,6 @@
 package com.formkiq.gradle.services;
 
-import static com.formkiq.gradle.internal.NativeImageExecutor.GRAALVM_JAVA_MAIN;
-
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.command.BuildImageResultCallback;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Bind;
@@ -14,20 +11,32 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
+import org.gradle.api.logging.Logger;
 
 /** Default implementation using docker-java client (socket first, then TCP). */
 public final class DefaultDockerService implements DockerService {
   private final DockerClient dockerClient;
 
-  /** constructor. */
-  public DefaultDockerService() {
+  /** {@link Logger}. */
+  private final Logger log;
+
+  /** {@link LoggingBuildImageResultCallback}. */
+  private final LoggingBuildImageResultCallback callback;
+
+  /**
+   * constructor.
+   *
+   * @param logger {@link Logger}
+   */
+  public DefaultDockerService(final Logger logger) {
     this.dockerClient = initClient();
+    this.log = logger;
+    this.callback = new LoggingBuildImageResultCallback(this.log);
   }
 
   private DockerClient initClient() {
@@ -68,17 +77,25 @@ public final class DefaultDockerService implements DockerService {
 
   @Override
   public Path buildDockerImage(final Path buildDir, final String imageTag,
-      final String dockerFileContent) throws IOException {
+      final String dockerFileContent, final Path contextDir) throws IOException {
 
     Path dockerfile = writeDockerFile(buildDir, dockerFileContent);
 
-    File contextDir = buildDir.resolve(GRAALVM_JAVA_MAIN).toFile();
+    String dockerCommand =
+        String.format("docker build -f %s -t %s %s", dockerfile, imageTag, contextDir);
 
-    dockerClient.buildImageCmd().withBaseDirectory(contextDir).withDockerfile(dockerfile.toFile())
-        .withTags(Collections.singleton(imageTag)).exec(new BuildImageResultCallback())
-        .awaitImageId();
+    log(dockerCommand);
+    dockerClient.buildImageCmd().withBaseDirectory(contextDir.toFile())
+        .withDockerfile(dockerfile.toFile()).withTags(Collections.singleton(imageTag))
+        .exec(this.callback).awaitImageId();
 
     return dockerfile;
+  }
+
+  private void log(final String log) {
+    if (this.log != null) {
+      this.log.info(log);
+    }
   }
 
   @Override
@@ -88,20 +105,33 @@ public final class DefaultDockerService implements DockerService {
     Path path = buildDir.resolve("output");
     Files.createDirectories(path);
 
-    Volume containerOutputVolume = new Volume("/output");
-    HostConfig hostConfig = HostConfig.newHostConfig()
-        .withBinds(new Bind(path.toAbsolutePath().toString(), containerOutputVolume));
+    String containerName = "copy-file-container-" + System.currentTimeMillis();
+    String hostPath = path.toAbsolutePath().toString();
 
+    log(String.format("docker run --name %s -v %s:/output %s", containerName, hostPath, imageTag));
+
+    Volume containerOutputVolume = new Volume("/output");
+    HostConfig hostConfig =
+        HostConfig.newHostConfig().withBinds(new Bind(hostPath, containerOutputVolume));
+
+    log("Creating container '" + containerName + "' from image '" + imageTag + "'");
     CreateContainerResponse container = dockerClient.createContainerCmd(imageTag)
-        .withName("copy-file-container-" + System.currentTimeMillis()).withHostConfig(hostConfig)
-        .exec();
+        .withName(containerName).withHostConfig(hostConfig).exec();
 
     String containerId = container.getId();
-    dockerClient.startContainerCmd(containerId).exec();
+    log("Container created with ID: " + containerId);
+
     try {
+      log("Starting container " + containerId);
+      dockerClient.startContainerCmd(containerId).exec();
+
+      log("Waiting for container " + containerId + " to finish");
       dockerClient.waitContainerCmd(containerId).start().awaitCompletion();
+      log("Container " + containerId + " finished successfully");
     } finally {
+      log("Removing container " + containerId + " (force=true)");
       dockerClient.removeContainerCmd(containerId).withForce(true).exec();
+      log("Container " + containerId + " removed");
     }
   }
 

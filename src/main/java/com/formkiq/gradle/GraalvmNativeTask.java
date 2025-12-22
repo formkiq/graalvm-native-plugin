@@ -14,6 +14,8 @@
  */
 package com.formkiq.gradle;
 
+import static com.formkiq.gradle.internal.NativeImageExecutor.GRAALVM_JAVA_MAIN;
+
 import com.formkiq.gradle.internal.ArchiveUtils;
 import com.formkiq.gradle.internal.Downloader;
 import com.formkiq.gradle.internal.NativeImageExecutor;
@@ -169,12 +171,17 @@ public abstract class GraalvmNativeTask extends DefaultTask {
   @TaskAction
   public void createImage() {
 
-    if (extension.getMainClassName() != null) {
+    String mainClassName = this.extension.getMainClassName().getOrNull();
+    String dockerFile = this.extension.getDockerFile();
+    boolean hasMainClass = mainClassName != null && !mainClassName.isBlank();
+    boolean hasDockerFile = dockerFile != null && !dockerFile.isBlank();
+
+    if (hasMainClass || hasDockerFile) {
       try {
 
         NativeImageExecutor executor = new NativeImageExecutor(this.extension);
 
-        if (this.extension.getDockerFile() != null) {
+        if (hasDockerFile) {
           executeDockerFile();
         } else if (this.extension.getDockerImage() != null) {
 
@@ -223,26 +230,28 @@ public abstract class GraalvmNativeTask extends DefaultTask {
 
   private void executeDockerFile() throws IOException, InterruptedException {
 
-    DockerService service = new DefaultDockerService();
+    DockerService service = new DefaultDockerService(getLogger());
     if (!service.isDockerRunning()) {
       throw new ResourceException("Docker is not running");
     }
 
     String dockerfileContent = Files.readString(Path.of(this.extension.getDockerFile()));
-    getLogger().info("Generating Dockerfile");
-    getLogger().info("{}", dockerfileContent);
+    getLogger().info("Building Dockerfile: " + this.extension.getDockerFile());
 
     service.removeDockerImage(this.extension.getOutputImageTag());
 
     Path buildDir = getBuildDirectoryAsPath();
-    service.buildDockerImage(buildDir, this.extension.getOutputImageTag(), dockerfileContent);
+    Path contextDir = Path.of(this.extension.getDockerFile()).getParent();
+    contextDir = contextDir != null ? contextDir : Path.of(".");
+    service.buildDockerImage(buildDir, this.extension.getOutputImageTag(), dockerfileContent,
+        contextDir);
     service.runDockerImage(buildDir, this.extension.getOutputImageTag());
   }
 
   private void executeDockerImage(NativeImageExecutor executor)
       throws IOException, InterruptedException {
 
-    DockerService service = new DefaultDockerService();
+    DockerService service = new DefaultDockerService(getLogger());
     if (!service.isDockerRunning()) {
       throw new ResourceException("Docker is not running");
     }
@@ -264,7 +273,9 @@ public abstract class GraalvmNativeTask extends DefaultTask {
     service.removeDockerImage(this.extension.getOutputImageTag());
 
     Path buildDir = getBuildDirectoryAsPath();
-    service.buildDockerImage(buildDir, this.extension.getOutputImageTag(), dockerfileContent);
+    Path contextDir = buildDir.resolve(GRAALVM_JAVA_MAIN);
+    service.buildDockerImage(buildDir, this.extension.getOutputImageTag(), dockerfileContent,
+        contextDir);
     service.runDockerImage(buildDir, this.extension.getOutputImageTag());
   }
 

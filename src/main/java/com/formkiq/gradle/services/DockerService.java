@@ -21,10 +21,11 @@ public interface DockerService {
    * @param buildDir {@link Path}
    * @param imageTag {@link String}
    * @param dockerFileContent Docker file content
+   * @param contextDir Docker Context dir
    * @return Path
    * @throws IOException IOException
    */
-  Path buildDockerImage(Path buildDir, String imageTag, String dockerFileContent)
+  Path buildDockerImage(Path buildDir, String imageTag, String dockerFileContent, Path contextDir)
       throws IOException;
 
   /**
