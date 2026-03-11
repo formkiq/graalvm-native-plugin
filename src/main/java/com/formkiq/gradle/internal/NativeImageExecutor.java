@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.tools.ant.helper.DefaultExecutor;
-import org.gradle.api.Project;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.internal.os.OperatingSystem;
 import org.gradle.process.ExecOperations;
@@ -54,15 +53,15 @@ public class NativeImageExecutor {
    * Build Graalvm Image.
    *
    * @param execOperations {@link ExecOperations}
-   * @param project {@link Project}
+   * @param projectName project name
    * @param buildDir {@link Path}
    * @param graalvmBaseDir {@link File}
    * @param outputDir {@link File}
    */
-  public void buildGraalvmImage(final ExecOperations execOperations, final Project project,
+  public void buildGraalvmImage(final ExecOperations execOperations, final String projectName,
       final Path buildDir, final File graalvmBaseDir, File outputDir) {
 
-    List<String> args = getBuildGraalvmImageArguments(project, buildDir);
+    List<String> args = getBuildGraalvmImageArguments(projectName, buildDir);
 
     execOperations.exec(arg0 -> {
       String executeable =
@@ -86,14 +85,14 @@ public class NativeImageExecutor {
     new RuntimeDependenciesDecompress().apply(buildDir, runtimeClasspath);
   }
 
-  List<String> getBuildGraalvmImageArguments(final Project project, final Path buildDir) {
+  List<String> getBuildGraalvmImageArguments(final String projectName, final Path buildDir) {
 
     List<String> args = new ArrayList<>(new GraalvmParameterToStrings().apply(this.extension));
 
     String executableName = this.extension.getOutputFileName();
 
     if (executableName != null) {
-      args.add("-H:Name=" + getExecutableName(project));
+      args.add("-H:Name=" + getExecutableName(projectName));
     }
 
     args.addAll(new GraalvmClasspathArguments(buildDir).apply(this.extension));
@@ -103,9 +102,9 @@ public class NativeImageExecutor {
     return args;
   }
 
-  private String getExecutableName(final Project project) {
+  private String getExecutableName(final String projectName) {
     return this.extension.getOutputFileName() != null ? this.extension.getOutputFileName()
-        : project.getName();
+        : projectName;
   }
 
   private Path getGraalBin(final File graalvmBaseDir) {
@@ -139,19 +138,19 @@ public class NativeImageExecutor {
    * Run Native Image Command.
    *
    * @param execOperations {@link ExecOperations}
-   * @param project {@link Project}
+   * @param projectName project name
    * @param buildDir {@link Path}
    * @param graalvmBaseDir {@link Files}
    * @param outputDir {@link File}
    * @param runtimeClasspath {@link ConfigurableFileCollection}
    * @throws IOException IOException
    */
-  public void runNativeImage(final ExecOperations execOperations, final Project project,
+  public void runNativeImage(final ExecOperations execOperations, final String projectName,
       final Path buildDir, final File graalvmBaseDir, File outputDir,
       final ConfigurableFileCollection runtimeClasspath) throws IOException {
 
     buildGraalvmJavaMain(buildDir, runtimeClasspath);
 
-    buildGraalvmImage(execOperations, project, buildDir, graalvmBaseDir, outputDir);
+    buildGraalvmImage(execOperations, projectName, buildDir, graalvmBaseDir, outputDir);
   }
 }
