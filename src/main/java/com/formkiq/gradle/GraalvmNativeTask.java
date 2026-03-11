@@ -37,6 +37,7 @@ import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.resources.ResourceException;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
@@ -79,6 +80,14 @@ public abstract class GraalvmNativeTask extends DefaultTask {
    */
   @OutputDirectory
   public abstract DirectoryProperty getBuildDirectory();
+
+  /**
+   * Project name captured at configuration time for configuration-cache safety.
+   *
+   * @return Property
+   */
+  @Input
+  public abstract Property<String> getProjectName();
 
   /**
    * Extension configuration fingerprint for task caching.
@@ -214,8 +223,9 @@ public abstract class GraalvmNativeTask extends DefaultTask {
           }
 
           executor.runGuInstallation(getExecOperations(), graalvmBaseDir);
-          executor.runNativeImage(getExecOperations(), getProject(), getBuildDirectoryAsPath(),
-              graalvmBaseDir.toFile(), path.toFile(), getRuntimeClasspath());
+          executor.runNativeImage(getExecOperations(), getProjectName().get(),
+              getBuildDirectoryAsPath(), graalvmBaseDir.toFile(), path.toFile(),
+              getRuntimeClasspath());
         }
 
       } catch (IOException | InterruptedException e) {

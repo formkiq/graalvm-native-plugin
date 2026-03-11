@@ -32,7 +32,7 @@ class NativeImageExecutorNoMockTest {
     NativeImageExecutor executor = new NativeImageExecutor(extension);
 
     // when
-    List<String> args = executor.getBuildGraalvmImageArguments(project, fakeBuildDir);
+    List<String> args = executor.getBuildGraalvmImageArguments(project.getName(), fakeBuildDir);
 
     // then
     assertTrue(args.stream().anyMatch(a -> a.equals("-H:Name=my-app")),
@@ -49,7 +49,7 @@ class NativeImageExecutorNoMockTest {
     NativeImageExecutor executor = new NativeImageExecutor(extension);
 
     // when
-    List<String> args = executor.getBuildGraalvmImageArguments(project, fakeBuildDir);
+    List<String> args = executor.getBuildGraalvmImageArguments(project.getName(), fakeBuildDir);
 
     // then
     assertTrue(args.stream().noneMatch(a -> a.startsWith("-H:Name=")),
@@ -67,7 +67,7 @@ class NativeImageExecutorNoMockTest {
     NativeImageExecutor executor = new NativeImageExecutor(extension);
 
     // when
-    List<String> args = executor.getBuildGraalvmImageArguments(project, fakeBuildDir);
+    List<String> args = executor.getBuildGraalvmImageArguments(project.getName(), fakeBuildDir);
 
     // then
     final int expected = 7;

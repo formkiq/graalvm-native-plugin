@@ -42,6 +42,7 @@ public class GraalvmNativePlugin implements Plugin<Project> {
           task.setExtension(ext);
           task.usesService(svc);
           task.getBuildDirectory().set(project.getLayout().getBuildDirectory().dir("graalvm"));
+          task.getProjectName().set(project.getName());
 
           // ✅ Opt-in: task will only run if configured
           task.onlyIf(t -> {
